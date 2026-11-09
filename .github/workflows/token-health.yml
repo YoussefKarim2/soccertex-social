@@ -1,0 +1,49 @@
+name: Check publishing credentials
+# Replaces the old refresh-token.yml.
+#
+# Under the Instagram API with Unified Login there is no ig_refresh_token call
+# to make — the app holds a Business Integration System User Access Token, and
+# whether it expires at all depends on the configuration. So there is nothing
+# to rotate on a timer. What there IS worth doing is noticing, loudly, if the
+# token stops working, because the failure mode is silent: posts simply stop.
+#
+# A token dies when it expires, when the Instagram account is removed from the
+# business portfolio, or when the account is moved to another portfolio. All
+# three surface here as a failed run and a GitHub notification.
+on:
+  schedule:
+    - cron: "0 7 * * 1"       # Mondays, well before the 16:00 Instagram slot
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+
+      - name: Instagram token
+        env:
+          IG_USER_ID:      ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: python3 publish/instagram.py --check-token
+
+      - name: LinkedIn token
+        if: always()
+        env:
+          LI_ACCESS_TOKEN: ${{ secrets.LI_ACCESS_TOKEN }}
+          LI_AUTHOR_URN:   ${{ secrets.LI_AUTHOR_URN }}
+        run: |
+          python3 - <<'PY'
+          import os, sys
+          sys.path.insert(0, '.')
+          from publish.linkedin import author_urn, PublishError
+          tok = os.environ.get("LI_ACCESS_TOKEN")
+          if not tok:
+              print("LI_ACCESS_TOKEN not set — LinkedIn half is not live yet")
+              sys.exit(0)
+          try:
+              print(f"token OK  posting as {author_urn(tok)}")
+          except PublishError as e:
+              sys.exit(f"LinkedIn token check FAILED: {e}")
+          PY

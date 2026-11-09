@@ -1,0 +1,22 @@
+{"t": "2026-11-09T12:51:54+00:00", "level": "info", "msg": "control panel started"}
+{"t": "2026-11-09T12:53:01+00:00", "level": "info", "msg": "control panel started"}
+{"t": "2026-11-09T12:53:20+00:00", "level": "info", "msg": "marked lead-time--linkedin--20261210 -> vetoed"}
+{"t": "2026-11-09T12:53:20+00:00", "level": "info", "msg": "marked sublimation-limits--instagram--20261210 -> vetoed"}
+{"t": "2026-11-09T12:53:22+00:00", "level": "info", "msg": "marked season-calendar--linkedin--20261211 -> vetoed"}
+{"t": "2026-11-09T12:53:22+00:00", "level": "info", "msg": "marked white-kit--instagram--20261211 -> vetoed"}
+{"t": "2026-11-09T12:53:24+00:00", "level": "info", "msg": "marked price-drivers--linkedin--20261212 -> vetoed"}
+{"t": "2026-11-09T12:53:41+00:00", "level": "info", "msg": "render: /Library/Developer/CommandLineTools/usr/bin/python3 build_all.py"}
+{"t": "2026-11-09T12:53:43+00:00", "level": "info", "msg": "reschedule: /Library/Developer/CommandLineTools/usr/bin/python3 -m engine.queue_build"}
+{"t": "2026-11-09T12:53:45+00:00", "level": "info", "msg": "reschedule finished rc=0"}
+{"t": "2026-11-09T12:53:45+00:00", "level": "error", "msg": "render finished rc=1"}
+{"t": "2026-11-09T13:01:20+00:00", "level": "info", "msg": "control panel started"}
+{"t": "2026-11-09T13:01:20+00:00", "level": "info", "msg": "schedule started"}
+{"t": "2026-11-09T13:01:20+00:00", "level": "info", "msg": "schedule finished"}
+{"t": "2026-11-09T13:10:38+00:00", "level": "info", "msg": "control panel started"}
+{"t": "2026-11-09T13:10:38+00:00", "level": "info", "msg": "schedule started"}
+{"t": "2026-11-09T13:10:38+00:00", "level": "info", "msg": "schedule finished"}
+{"t": "2026-11-09T13:15:09+00:00", "level": "info", "msg": "put back: lead-time--linkedin--20261210"}
+{"t": "2026-11-09T13:15:10+00:00", "level": "info", "msg": "put back: sublimation-limits--instagram--20261210"}
+{"t": "2026-11-09T13:15:11+00:00", "level": "info", "msg": "put back: season-calendar--linkedin--20261211"}
+{"t": "2026-11-09T13:15:11+00:00", "level": "info", "msg": "put back: white-kit--instagram--20261211"}
+{"t": "2026-11-09T13:15:12+00:00", "level": "info", "msg": "put back: price-drivers--linkedin--20261212"}

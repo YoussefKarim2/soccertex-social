@@ -1,0 +1,33 @@
+name: Publish due posts
+on:
+  schedule:
+    - cron: "5 * * * *"       # hourly; the queue decides what is actually due
+  workflow_dispatch:
+    inputs:
+      dry_run: { description: "Resolve only, publish nothing", type: boolean, default: true }
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Publish
+        env:
+          IG_USER_ID:      ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          LI_ACCESS_TOKEN: ${{ secrets.LI_ACCESS_TOKEN }}
+          LI_AUTHOR_URN:   ${{ secrets.LI_AUTHOR_URN }}
+          MEDIA_BASE_URL:  ${{ vars.MEDIA_BASE_URL }}
+        run: |
+          FLAG="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
+          python3 publish/instagram.py --queue queue.json $FLAG
+          python3 publish/linkedin.py  --queue queue.json $FLAG
+      - name: Record results
+        if: always()
+        run: |
+          git config user.name  "soccertex-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add queue.json
+          git diff --staged --quiet || { git commit -m "publish: $(date -u +%Y-%m-%dT%H:%MZ)"; git push; }
