@@ -199,7 +199,10 @@ function gate(msg = "") {
       <li>Permissions → Repository → <b>Contents: Read and write</b>, and <b>Actions: Read-only</b></li>
       <li>Generate, copy, paste it below</li>
     </ol>
-    <input id="tok" type="password" placeholder="github_pat_..." autocomplete="off">
+    <input id="tok" type="text" placeholder="github_pat_..." autocomplete="off"
+      autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true">
+    <div id="cnt" style="font-size:12.5px;color:var(--faint)">Nothing pasted yet. A
+      fine-grained token is about 93 characters and starts <code>github_pat_</code>.</div>
     <button id="go">Open the desk</button>
     <div class="err">${esc(msg)}</div>
     <p style="font-size:13px">Stored in this browser only. Revoke it any time from the
@@ -221,8 +224,19 @@ function gate(msg = "") {
     }
   };
   $("#go").onclick = go;
-  $("#tok").onkeydown = e => { if (e.key === "Enter") go(); };
-  $("#tok").focus();
+  const inp = $("#tok"), cnt = $("#cnt");
+  const tally = () => {
+    const v = inp.value.trim();
+    if (!v) { cnt.textContent = "Nothing pasted yet."; cnt.style.color = "var(--faint)"; return; }
+    const looks = v.startsWith("github_pat_");
+    cnt.textContent = `${v.length} characters` +
+      (looks ? " — looks like a fine-grained token." :
+               " — this does not start with github_pat_, so it is probably not the token.");
+    cnt.style.color = looks ? "var(--pitch)" : "var(--red)";
+  };
+  inp.oninput = tally;
+  inp.onkeydown = e => { if (e.key === "Enter") go(); };
+  inp.focus();
 }
 
 const fmt = iso => {
