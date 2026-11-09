@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SoccerTex Review Desk</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Source+Sans+3:wght@400;600&family=Roboto+Condensed:wght@400;700&display=swap">
+<style>
+:root{
+  --pitch:#0E7A3C;--bone:#FAF8F3;--surface:#fff;--raise:#F1F4EF;--line:#DFE4DB;
+  --ink:#131A14;--muted:#5C6A5E;--faint:#8A968C;--amber:#B4740E;--red:#A8281F;
+  --display:'Secular One',Impact,sans-serif;--body:'Source Sans 3',system-ui,sans-serif;
+  --data:'Roboto Condensed','Arial Narrow',sans-serif;
+  --shadow:0 1px 2px rgba(19,26,20,.05),0 6px 18px rgba(19,26,20,.05);
+}
+@media (prefers-color-scheme:dark){:root{
+  --pitch:#3FBE74;--bone:#0C110D;--surface:#141B15;--raise:#1B241C;--line:#2A352B;
+  --ink:#E8EFE9;--muted:#9BAA9E;--faint:#6E7D71;--amber:#E0A542;--red:#F08B82;
+  color-scheme:dark;--shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.3);
+}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bone);color:var(--ink);font-family:var(--body);font-size:16px;
+  line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0}
+.num{font-family:var(--data);font-variant-numeric:tabular-nums}
+header{background:var(--pitch);color:#fff}
+.hd{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 20px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hd h1{font-size:clamp(21px,5vw,28px);line-height:1.1}
+.hd .live{font-size:12.5px;opacity:.92;margin-left:auto}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#B6F2CE;
+  margin-right:6px;vertical-align:1px}
+.rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;
+  margin:18px 0 22px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.tile .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.tile .v{font-family:var(--data);font-size:25px;line-height:1.2}
+.tile.warn .v{color:var(--amber)}.tile.bad .v{color:var(--red)}
+h2.sec{font-size:17px;margin:24px 0 3px}
+.sub{font-size:14px;color:var(--muted);margin:0 0 13px;max-width:70ch}
+.runs{display:flex;gap:8px;flex-wrap:wrap}
+.run{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:4px 11px;
+  background:var(--surface);color:var(--muted);text-decoration:none;white-space:nowrap}
+.run.ok{border-color:var(--pitch);color:var(--pitch)}
+.run.fail{border-color:var(--red);color:var(--red)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden;
+  display:grid;grid-template-columns:200px 1fr}
+@media (max-width:640px){.card{grid-template-columns:1fr}}
+.media{background:#0A0F0B;min-width:0}
+video{width:100%;display:block;aspect-ratio:9/16;object-fit:cover;background:#0A0F0B}
+@media (max-width:640px){video{aspect-ratio:9/12}}
+.bd{padding:14px 15px 15px;min-width:0;display:flex;flex-direction:column;gap:9px}
+.meta{display:flex;gap:9px;flex-wrap:wrap;align-items:center;font-size:12.5px}
+.chip{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  padding:3px 8px;border-radius:5px;color:#fff;white-space:nowrap}
+.chip-instagram{background:#B5317E}.chip-linkedin{background:#0A66C2}
+.when{color:var(--muted)}.when b{color:var(--ink);font-weight:600}
+.pillar{color:var(--faint)}
+.hook{font-size:17px;line-height:1.25;text-wrap:balance}
+details summary{font-size:13px;color:var(--pitch);cursor:pointer;width:fit-content}
+details p{font-size:14px;color:var(--muted);white-space:pre-wrap;margin:7px 0 0}
+.state{font-size:13px;padding:7px 10px;border-radius:7px;background:var(--raise);
+  border-left:3px solid var(--faint);color:var(--muted)}
+.state.manual{border-left-color:var(--amber);color:var(--amber)}
+.state.veto{border-left-color:var(--red);color:var(--red)}
+.state.done{border-left-color:var(--pitch);color:var(--pitch)}
+label.nl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+textarea,input{width:100%;font:inherit;font-size:14.5px;color:var(--ink);background:var(--raise);
+  border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+textarea{resize:vertical}
+textarea:focus-visible,input:focus-visible{outline:2px solid var(--pitch);outline-offset:1px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{font:inherit;font-size:13px;cursor:pointer;border-radius:8px;padding:7px 12px;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button:hover{border-color:var(--pitch)}
+button:focus-visible{outline:2px solid var(--pitch);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--pitch);border-color:var(--pitch);color:#fff}
+button.veto[aria-pressed="true"]{background:var(--red);border-color:var(--red)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.saved{font-size:12px;color:var(--pitch);opacity:0;transition:opacity .2s}
+.saved.on{opacity:1}
+.saved.bad{color:var(--red)}
+.card.off{opacity:.6}
+.gate{max-width:440px;margin:9vh auto;display:flex;flex-direction:column;gap:12px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px))}
+.gate h1{font-size:27px}
+.gate p{margin:0;font-size:14.5px;color:var(--muted)}
+.gate ol{margin:0;padding-left:20px;font-size:14.5px;color:var(--muted)}
+.gate li{margin-bottom:5px}
+.gate code{background:var(--raise);padding:1px 5px;border-radius:4px;font-size:13px}
+.err{color:var(--red);font-size:13.5px;min-height:20px}
+.empty{color:var(--faint);padding:28px 0;text-align:center}
+footer{margin-top:28px;padding-top:15px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--faint)}
+a{color:var(--pitch)}
+.lnk{background:none;border:none;color:var(--pitch);padding:0;font-size:13px;
+  text-decoration:underline;cursor:pointer}
+</style></head><body>
+<div id="root"></div>
+<script>
+/* SoccerTex Review Desk — static page, no server.
+ *
+ * It reads queue.json and the workflow runs straight from the GitHub REST API
+ * (which sends CORS headers, so a browser may call it) and writes decisions
+ * back as commits. Authorisation is a fine-grained personal access token that
+ * you paste once; it is kept in this browser's localStorage and never leaves
+ * your device except to api.github.com.
+ *
+ * Why not a server: it would need a shared password and a long-lived token
+ * sitting in somebody else's cloud. This way the only credential is yours,
+ * scoped to one repository, and revocable from GitHub in one click. */
+
+const REPO = "YoussefKarim2/soccertex-social";
+const BRANCH = "main";
+const API = "https://api.github.com";
+const KEY = "soccertex.desk.token";
+
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+let token = null;
+try { token = localStorage.getItem(KEY); } catch (e) { token = null; }
+
+function gh(path, init = {}) {
+  return fetch(API + path, {
+    ...init,
+    headers: {
+      Authorization: "Bearer " + token,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      ...(init.headers || {}),
+    },
+  });
+}
+
+/* base64 <-> utf8, so accented captions survive the round trip */
+const fromB64 = s => new TextDecoder().decode(
+  Uint8Array.from(atob(s.replace(/\n/g, "")), c => c.charCodeAt(0)));
+const toB64 = s => {
+  const b = new TextEncoder().encode(s);
+  let bin = ""; b.forEach(x => { bin += String.fromCharCode(x); });
+  return btoa(bin);
+};
+
+let SHA = null, QUEUE = null;
+
+async function readQueue() {
+  const r = await gh(`/repos/${REPO}/contents/queue.json?ref=${BRANCH}&t=${Date.now()}`);
+  if (r.status === 401 || r.status === 403) throw new Error("token-bad");
+  if (!r.ok) throw new Error("Could not read the queue (" + r.status + ")");
+  const j = await r.json();
+  SHA = j.sha;
+  QUEUE = JSON.parse(fromB64(j.content));
+  return QUEUE;
+}
+
+async function writeQueue(message) {
+  const r = await gh(`/repos/${REPO}/contents/queue.json`, {
+    method: "PUT",
+    body: JSON.stringify({
+      message, branch: BRANCH, sha: SHA,
+      content: toB64(JSON.stringify(QUEUE, null, 2) + "\n"),
+    }),
+  });
+  if (r.status === 409) {                 // someone else committed first
+    await readQueue();
+    throw new Error("The queue changed underneath — reloaded, try again.");
+  }
+  if (!r.ok) throw new Error("Write refused (" + r.status + ")");
+  SHA = (await r.json()).content.sha;
+}
+
+async function readRuns() {
+  try {
+    const r = await gh(`/repos/${REPO}/actions/runs?per_page=6`);
+    if (!r.ok) return [];
+    return (await r.json()).workflow_runs || [];
+  } catch (e) { return []; }
+}
+
+/* ---------- views ---------- */
+
+function gate(msg = "") {
+  document.body.innerHTML = '<div id="root"></div>';
+  $("#root").innerHTML = `<div class="gate">
+    <h1>SoccerTex Review Desk</h1>
+    <p>This page talks to your repository directly. It needs a token that can
+       edit <code>${esc(REPO)}</code> and nothing else.</p>
+    <ol>
+      <li>GitHub → Settings → Developer settings → <b>Fine-grained tokens</b> → Generate new token</li>
+      <li>Repository access: <b>Only select repositories</b> → <code>soccertex-social</code></li>
+      <li>Permissions → Repository → <b>Contents: Read and write</b>, and <b>Actions: Read-only</b></li>
+      <li>Generate, copy, paste it below</li>
+    </ol>
+    <input id="tok" type="password" placeholder="github_pat_..." autocomplete="off">
+    <button id="go">Open the desk</button>
+    <div class="err">${esc(msg)}</div>
+    <p style="font-size:13px">Stored in this browser only. Revoke it any time from the
+       same GitHub page and this stops working immediately.</p>
+  </div>`;
+  const go = async () => {
+    const v = $("#tok").value.trim();
+    if (!v) return;
+    token = v;
+    try {
+      await readQueue();
+      try { localStorage.setItem(KEY, v); } catch (e) {}
+      load();
+    } catch (e) {
+      token = null;
+      gate(e.message === "token-bad"
+        ? "That token cannot read the repository. Check the repo and the Contents permission."
+        : e.message);
+    }
+  };
+  $("#go").onclick = go;
+  $("#tok").onkeydown = e => { if (e.key === "Enter") go(); };
+  $("#tok").focus();
+}
+
+const fmt = iso => {
+  const d = new Date(iso);
+  return {
+    day: d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }),
+    time: d.toISOString().slice(11, 16),
+  };
+};
+
+function stateOf(it) {
+  if (it.status === "published") {
+    const p = it.result && it.result.permalink;
+    return ["done", p ? `Published. <a href="${esc(p)}" target="_blank" rel="noopener">See the post</a>` : "Published."];
+  }
+  if (it.status === "failed") return ["veto", "Failed: " + esc(it.last_error || "no detail")];
+  if (it.status === "vetoed") return ["veto", "Stopped. This will not publish."];
+  if (it.status === "blocked") return ["veto", "No video rendered for this one yet."];
+  if (it.manual) return ["manual", "Held back for you to post in the app with a trending sound."];
+  if (it.review_note) return ["", "Change requested. Still scheduled until it is reworked."];
+  return ["", ""];
+}
+
+function card(it) {
+  const { day, time } = fmt(it.publish_at);
+  const [cls, text] = stateOf(it);
+  const done = it.status === "published";
+  const hook = (it.caption || "").trim().split("\n")[0];
+  return `<article class="card ${it.status === "vetoed" ? "off" : ""}" data-id="${esc(it.id)}">
+    <div class="media"><video src="../${esc(it.video)}" preload="metadata" controls playsinline muted></video></div>
+    <div class="bd">
+      <div class="meta">
+        <span class="chip chip-${esc(it.platform)}">${it.platform === "instagram" ? "Instagram" : "LinkedIn"}</span>
+        <span class="when"><b>${esc(day)}</b> <span class="num">${esc(time)}</span> UTC</span>
+        <span class="pillar">${esc((it.pillar || "").replace(/^\d\s/, ""))}</span>
+      </div>
+      <h3 class="hook">${esc(hook)}</h3>
+      <details><summary>Full caption</summary><p>${esc(it.caption)}</p></details>
+      ${text ? `<div class="state ${cls}">${text}</div>` : ""}
+      <label class="nl" for="n-${esc(it.id)}">Changes you want</label>
+      <textarea id="n-${esc(it.id)}" rows="2" ${done ? "disabled" : ""}
+        placeholder="e.g. cut the intro, lead with the 150 GSM number">${esc(it.review_note || "")}</textarea>
+      <div class="acts">
+        <button data-k="manual" aria-pressed="${!!it.manual}" ${done ? "disabled" : ""}>Trending sound — I'll post this one</button>
+        <button class="veto" data-k="veto" aria-pressed="${it.status === "vetoed"}" ${done ? "disabled" : ""}>Don't post this</button>
+        <span class="saved"></span>
+      </div>
+    </div></article>`;
+}
+
+let busy = false;
+
+async function commit(id, patch, el) {
+  const saved = $(".saved", el);
+  if (busy) { saved.textContent = "Wait…"; saved.classList.add("on"); return; }
+  busy = true;
+  saved.className = "saved on"; saved.textContent = "Saving";
+  try {
+    const it = QUEUE.items.find(i => i.id === id);
+    if (!it) throw new Error("gone from the queue");
+    if (it.status === "published") throw new Error("already published");
+    const what = [];
+    if ("veto" in patch) {
+      it.status = patch.veto ? "vetoed" : "queued";
+      what.push(patch.veto ? "vetoed" : "un-vetoed");
+    }
+    if ("manual" in patch) {
+      if (patch.manual) it.manual = true; else delete it.manual;
+      what.push(patch.manual ? "held for manual posting" : "back to auto");
+    }
+    if ("note" in patch) {
+      const n = patch.note.trim();
+      if (n) it.review_note = n; else delete it.review_note;
+      what.push(n ? "note added" : "note cleared");
+    }
+    await writeQueue(`Review desk: ${id} — ${what.join(", ")}`);
+    saved.textContent = "Saved";
+    setTimeout(() => saved.classList.remove("on"), 1500);
+  } catch (e) {
+    saved.classList.add("bad");
+    saved.textContent = e.message === "token-bad" ? "Token rejected" : e.message;
+  } finally { busy = false; }
+}
+
+function wire() {
+  document.querySelectorAll(".card").forEach(el => {
+    const id = el.dataset.id;
+    el.querySelectorAll("button[data-k]").forEach(b => b.onclick = () => {
+      const on = b.getAttribute("aria-pressed") !== "true";
+      b.setAttribute("aria-pressed", String(on));
+      if (b.dataset.k === "veto") el.classList.toggle("off", on);
+      commit(id, { [b.dataset.k]: on }, el);
+    });
+    const ta = $("textarea", el);
+    let t;
+    if (ta) ta.oninput = () => {
+      clearTimeout(t);
+      t = setTimeout(() => commit(id, { note: ta.value }, el), 900);
+    };
+  });
+}
+
+async function load() {
+  document.body.innerHTML = '<div id="root"><div class="wrap"><p class="empty">Reading the queue…</p></div></div>';
+  let runs = [];
+  try {
+    await readQueue();
+    runs = await readRuns();
+  } catch (e) {
+    if (e.message === "token-bad") {
+      try { localStorage.removeItem(KEY); } catch (_) {}
+      return gate("That token no longer works. Paste a new one.");
+    }
+    $("#root").innerHTML = `<div class="wrap"><p class="empty">${esc(e.message)}</p></div>`;
+    return;
+  }
+
+  const items = QUEUE.items.slice().sort((a, b) => a.publish_at.localeCompare(b.publish_at));
+  const c = { queued: 0, manual: 0, published: 0, failed: 0, vetoed: 0 };
+  items.forEach(i => {
+    if (i.manual && i.status === "queued") c.manual++;
+    else if (c[i.status] !== undefined) c[i.status]++;
+  });
+  const upcoming = items.filter(i => i.status !== "published").slice(0, 40);
+  const runHtml = runs.slice(0, 5).map(w =>
+    `<a class="run ${w.conclusion === "success" ? "ok" : w.conclusion ? "fail" : ""}"
+        href="${esc(w.html_url)}" target="_blank" rel="noopener">${esc(w.name)} — ${esc(w.conclusion || w.status)}</a>`
+  ).join("");
+
+  $("#root").innerHTML = `
+<header><div class="hd"><h1>SoccerTex Review Desk</h1>
+  <span class="live"><span class="dot"></span>live · read ${new Date().toISOString().slice(11, 16)} UTC</span>
+</div></header>
+<div class="wrap">
+  <div class="rail">
+    <div class="tile"><div class="k">Scheduled</div><div class="v num">${c.queued}</div></div>
+    <div class="tile warn"><div class="k">Held for you</div><div class="v num">${c.manual}</div></div>
+    <div class="tile"><div class="k">Published</div><div class="v num">${c.published}</div></div>
+    <div class="tile ${c.failed ? "bad" : ""}"><div class="k">Failed</div><div class="v num">${c.failed}</div></div>
+    <div class="tile"><div class="k">Stopped</div><div class="v num">${c.vetoed}</div></div>
+  </div>
+  <h2 class="sec">Pipeline</h2>
+  <p class="sub">The last runs, straight from GitHub Actions.</p>
+  <div class="runs">${runHtml || '<span class="run">no runs yet</span>'}</div>
+  <h2 class="sec">Going out next</h2>
+  <p class="sub">Times are UTC. Every change here is committed to the queue straight away,
+     and the next hourly publish run obeys it.</p>
+  ${upcoming.length ? upcoming.map(card).join("") : '<p class="empty">Nothing scheduled.</p>'}
+  <footer>
+    Media served from this same site. Stock factory footage is stamped as library footage,
+    never as SoccerTex's own floor.
+    <button class="lnk" id="forget">Forget my token on this device</button>
+  </footer>
+</div>`;
+  wire();
+  $("#forget").onclick = () => {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    token = null; gate("Token forgotten on this device.");
+  };
+}
+
+token ? load() : gate();
+</script></body></html>
