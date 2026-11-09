@@ -167,6 +167,7 @@ def main():
 
     due = [i for i in q["items"]
            if i.get("platform") == "linkedin" and i.get("status") == "queued"
+           and not i.get("manual")                   # held back for manual posting
            and datetime.fromisoformat(i["publish_at"]).replace(tzinfo=timezone.utc) <= now]
 
     if not due:

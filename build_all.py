@@ -23,11 +23,45 @@ SOURCES = [ROOT / "engine" / "bank.py", ROOT / "engine" / "compose.py",
            ROOT / "engine" / "footage.py", ROOT / "engine" / "audio.py"]
 
 
+MIN_SECONDS = 8.0      # Instagram rejects a Reel under 3s; our shortest cut is ~11s,
+                       # so anything under 8 is a truncated render, not a short topic.
+
+
 def stale(path: Path) -> bool:
     if not path.exists():
         return True
     t = path.stat().st_mtime
     return any(s.exists() and s.stat().st_mtime > t for s in SOURCES)
+
+
+def duration(path: Path) -> float:
+    """Actual duration of the written file, read back with ffprobe.
+
+    A render can finish without raising and still produce a truncated file —
+    one did: white-kit--social came out at 1.8s instead of 13.8s and was two
+    days from publishing. Trusting the composer's own `seconds` would not have
+    caught it, because the composer thought it wrote the whole thing.
+    """
+    import subprocess
+    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries",
+                        "format=duration", "-of", "csv=p=0", str(path)],
+                       capture_output=True, text=True)
+    try:
+        return float(r.stdout.strip())
+    except ValueError:
+        return 0.0
+
+
+def verify(dest: Path, expected: float) -> str | None:
+    """Return a reason the file is unusable, or None if it is fine."""
+    if not dest.exists() or dest.stat().st_size < 50_000:
+        return "file missing or implausibly small"
+    got = duration(dest)
+    if got < MIN_SECONDS:
+        return f"only {got:.1f}s on disk (expected {expected:.1f}s)"
+    if expected and got < expected * 0.75:
+        return f"{got:.1f}s on disk but the composer wrote {expected:.1f}s"
+    return None
 
 
 def main():
@@ -48,6 +82,10 @@ def main():
                 s = time.time()
                 v = compose(t, variant)
                 v.write()
+                bad = verify(dest, getattr(v, "seconds", 0.0))
+                if bad:
+                    dest.unlink(missing_ok=True)      # never leave a bad file to publish
+                    raise RuntimeError(f"render verification failed — {bad}")
                 made += 1
                 print(f"  {t['id']+'--'+variant:34s} {v.seconds:5.1f}s  "
                       f"{dest.stat().st_size/1024/1024:5.2f} MB  {time.time()-s:5.1f}s")

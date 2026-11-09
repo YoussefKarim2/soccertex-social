@@ -279,6 +279,7 @@ def main():
     due = [it for it in q["items"]
            if it.get("platform") == "instagram"
            and it.get("status") == "queued"          # "vetoed" is never picked up
+           and not it.get("manual")                  # held back for trending audio
            and datetime.fromisoformat(it["publish_at"]).replace(
                tzinfo=timezone.utc) <= now]
 

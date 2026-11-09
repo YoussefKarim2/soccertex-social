@@ -1,0 +1,14 @@
+name = "soccertex-review-desk"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+# No secrets here. They are set once with `wrangler secret put` (or in the
+# Cloudflare dashboard) and are never in the repository:
+#
+#   GH_TOKEN        fine-grained PAT — Contents: Read and write, on
+#                   YoussefKarim2/soccertex-social ONLY, nothing else
+#   APP_PASSWORD    the password for the desk
+#   SESSION_SECRET  any long random string; signs the session cookie
+#
+# Free plan: 100,000 requests a day and no sleeping, so the desk opens
+# instantly. Nothing here needs a paid plan.
