@@ -180,7 +180,14 @@ def main():
 
     token = os.environ.get("LI_ACCESS_TOKEN")
     if not token:
-        print("ERROR: LI_ACCESS_TOKEN not set", file=sys.stderr); return 2
+        # Not configured yet is a SKIP, not a failure. Returning 2 here made
+        # every hourly run red, which buried the one thing a red run should
+        # mean: a post that was supposed to go out and didn't. The overdue
+        # items stay queued and the review desk shows them in red, so the
+        # signal is not lost — it is just reported where it belongs.
+        print(f"LI_ACCESS_TOKEN not set — skipping {len(due)} LinkedIn post(s). "
+              f"They stay queued and will go out once LinkedIn is connected.")
+        return 0
     if not base:
         print("ERROR: MEDIA_BASE_URL not set — LinkedIn needs a public media URL",
               file=sys.stderr); return 2

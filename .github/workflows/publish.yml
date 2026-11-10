@@ -1,7 +1,13 @@
 name: Publish due posts
 on:
   schedule:
-    - cron: "5 * * * *"       # hourly; the queue decides what is actually due
+    # Every 15 minutes, not hourly. GitHub's scheduler is best-effort: it
+    # drops runs under load, and on 10 Nov it skipped every slot between
+    # 15:31 and 19:10, so the 16:00 Instagram post simply never had a run to
+    # go out in. The publisher already picks up anything overdue, so the only
+    # fix needed is more chances to try. Each run is a few seconds, and
+    # Actions minutes are free on a public repository.
+    - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
       dry_run: { description: "Resolve only, publish nothing", type: boolean, default: true }
@@ -22,8 +28,17 @@ jobs:
           MEDIA_BASE_URL:  ${{ vars.MEDIA_BASE_URL }}
         run: |
           FLAG="${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}"
-          python3 publish/instagram.py --queue queue.json $FLAG
-          python3 publish/linkedin.py  --queue queue.json $FLAG
+          # Run both whatever happens to either. Chaining them meant a
+          # LinkedIn problem could stop Instagram from being attempted at
+          # all, and one platform's trouble is not a reason to hold the
+          # other's post.
+          set +e
+          python3 publish/instagram.py --queue queue.json $FLAG; IG=$?
+          python3 publish/linkedin.py  --queue queue.json $FLAG; LI=$?
+          echo "instagram exit $IG, linkedin exit $LI"
+          # Exit 1 means a post genuinely failed; 2 means misconfigured.
+          # Either is worth a red run. A clean skip now returns 0.
+          [ $IG -eq 0 ] && [ $LI -eq 0 ]
       - name: Record results
         if: always()
         run: |
