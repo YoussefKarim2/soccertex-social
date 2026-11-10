@@ -1,4 +1,4 @@
-preflight 2026-11-10T19:32:17Z
+preflight 2026-11-10T19:36:31Z
 
 queue      91 items, 90 still to publish
 cadence    two Instagram reels a day (12:30 and 17:00 UTC) plus one LinkedIn post (11:30 UTC); auto-publish with a 24h veto window
@@ -11,6 +11,7 @@ media      120 distinct URLs to check
 token      reads @soccertex.eg (id 17841417903547798)  OK
 quota      1 of 100 posts used in the last 24h
            cadence needs 2 a day — room for 99 more right now  OK
+lateness   no published post has a measurement yet
 
 preflight clean — every pending post has everything it needs
 
