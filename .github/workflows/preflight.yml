@@ -1,0 +1,20 @@
+name: Preflight the queue
+on:
+  schedule:
+    # Once a day, a few hours before the first slot, and well clear of the
+    # publish runs. This is a check, not a publisher — it never posts.
+    - cron: "47 6 * * *"
+  workflow_dispatch:
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Preflight
+        env:
+          IG_USER_ID:      ${{ vars.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          MEDIA_BASE_URL:  ${{ vars.MEDIA_BASE_URL }}
+        run: python3 publish/preflight.py --queue queue.json
