@@ -199,6 +199,29 @@ def check_instagram(pending) -> list[str]:
     return []
 
 
+def report_lateness(items) -> None:
+    """How close the posts that have gone out landed to their slot.
+
+    Not a pass/fail — nothing in the repo can make GitHub's scheduler fire.
+    But it is the number that says whether the cadence is actually being kept,
+    and it is the first thing to look at if a post appears at the wrong hour.
+    """
+    late = [(i["id"], i["result"]["late_minutes"]) for i in items
+            if i.get("status") == "published"
+            and isinstance(i.get("result"), dict)
+            and i["result"].get("late_minutes") is not None]
+    if not late:
+        print("lateness   no published post has a measurement yet")
+        return
+    worst_id, worst = max(late, key=lambda x: x[1])
+    median = sorted(v for _, v in late)[len(late) // 2]
+    print(f"lateness   {len(late)} posts measured, median {median} min, "
+          f"worst {worst} min ({worst_id})")
+    if worst > 60:
+        print("           a post landing over an hour late means the runner is "
+              "not firing often enough for the slot")
+
+
 def main():
     import argparse
     ap = argparse.ArgumentParser(description="Check the queue can publish")
@@ -227,6 +250,7 @@ def main():
     else:
         problems += check_media(pending, base)
     problems += check_instagram(pending)
+    report_lateness(items)
 
     print()
     if problems:

@@ -4,6 +4,10 @@ on:
     # Once a day, hours before the first slot and well clear of the publish
     # runs. This is a check, not a publisher — it never posts.
     - cron: "47 6 * * *"
+  push:
+    # the checks are cheap, and a broken publisher should be caught on the
+    # commit that broke it, not at 12:30 the next day
+    paths: ["publish/**", "engine/**", "queue.json", ".github/workflows/preflight.yml"]
   workflow_dispatch:
 jobs:
   preflight:
@@ -13,6 +17,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
+      - name: Publish path, Graph API stubbed
+        run: python3 tests/test_publish_path.py
       - name: Preflight
         id: run
         env:

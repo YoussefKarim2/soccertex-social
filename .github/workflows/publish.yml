@@ -1,13 +1,21 @@
 name: Publish due posts
 on:
   schedule:
-    # Every 15 minutes, not hourly. GitHub's scheduler is best-effort: it
-    # drops runs under load, and on 10 Nov it skipped every slot between
-    # 15:31 and 19:10, so the 16:00 Instagram post simply never had a run to
-    # go out in. The publisher already picks up anything overdue, so the only
-    # fix needed is more chances to try. Each run is a few seconds, and
-    # Actions minutes are free on a public repository.
-    - cron: "*/15 * * * *"
+    # Every 10 minutes, on minutes nobody else picks.
+    #
+    # GitHub's scheduler is best-effort and drops runs. Measured on this repo:
+    # an hourly cron produced 3 runs in 28 hours, roughly one every 8 hours,
+    # which is why the 16:00 post on 10 Nov never had a run to go out in. The
+    # publisher already picks up anything overdue, so the fix is more chances
+    # — and chances at times the scheduler is not busiest. :00, :15, :30 and
+    # :45 are where almost every cron in the world lands, so these are offset
+    # by 4 minutes. Each run is a few seconds and Actions minutes are free on
+    # a public repository.
+    #
+    # This reduces lateness; it cannot eliminate it. Each published item now
+    # records late_minutes, and preflight reports the median and the worst, so
+    # whether this is good enough is a measurement rather than a hope.
+    - cron: "4,14,24,34,44,54 * * * *"
   workflow_dispatch:
     inputs:
       dry_run: { description: "Resolve only, publish nothing", type: boolean, default: true }

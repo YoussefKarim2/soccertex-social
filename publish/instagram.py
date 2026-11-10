@@ -309,9 +309,17 @@ def main():
             break
         try:
             res = publish_item(acct, it, media_base)
+            # How late the post actually went out. GitHub's scheduler is
+            # best-effort and drops runs, so the gap between the slot and the
+            # run that caught it is the number that says whether the cadence
+            # is really being kept. Without it, lateness is invisible.
+            late = (now - datetime.fromisoformat(it["publish_at"]).replace(
+                tzinfo=timezone.utc)).total_seconds() / 60
+            res["late_minutes"] = round(late)
             it.update(status="published", result=res)
             used += 1; changed = True
-            print(f"  OK   {it['id']}  {res['permalink']}")
+            flag = f"  ({late:.0f} min late)" if late >= 20 else ""
+            print(f"  OK   {it['id']}  {res['permalink']}{flag}")
         except PublishError as e:
             it["attempts"] = it.get("attempts", 0) + 1
             it["last_error"] = str(e)

@@ -201,8 +201,11 @@ def main():
             url = f"{base.rstrip('/')}/{it['video'].lstrip('/')}"
             res = post_video(token, owner, url, it["caption"])
             verify(token, res["post_id"])
+            late = (now - datetime.fromisoformat(it["publish_at"]).replace(
+                tzinfo=timezone.utc)).total_seconds() / 60
             it.update(status="published", result={**res, "verified": True,
-                                                 "published_at": now.isoformat()})
+                                                 "published_at": now.isoformat(),
+                                                 "late_minutes": round(late)})
             changed = True
             print(f"  OK   {it['id']}  {res['permalink']}")
         except PublishError as e:
