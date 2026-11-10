@@ -30,8 +30,14 @@
       "video": "video/sublimation-limits--social.mp4",
       "pillar": "2 Kit School",
       "cover": "video/sublimation-limits--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-09T16:00:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-09T16:00:00+00:00",
+      "result": {
+        "media_id": "17927898834201157",
+        "permalink": "https://www.instagram.com/reel/Dfkol9cBU1y/",
+        "published_at": "2026-11-10T19:15:40+0000",
+        "verified": true
+      }
     },
     {
       "id": "season-calendar--linkedin--20261111",
