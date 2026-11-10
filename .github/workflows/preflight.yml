@@ -1,20 +1,47 @@
 name: Preflight the queue
 on:
   schedule:
-    # Once a day, a few hours before the first slot, and well clear of the
-    # publish runs. This is a check, not a publisher — it never posts.
+    # Once a day, hours before the first slot and well clear of the publish
+    # runs. This is a check, not a publisher — it never posts.
     - cron: "47 6 * * *"
   workflow_dispatch:
 jobs:
   preflight:
     runs-on: ubuntu-latest
+    permissions: { contents: write }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - name: Preflight
+        id: run
         env:
           IG_USER_ID:      ${{ vars.IG_USER_ID }}
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           MEDIA_BASE_URL:  ${{ vars.MEDIA_BASE_URL }}
-        run: python3 publish/preflight.py --queue queue.json
+        run: |
+          # The report is committed rather than left in the run log: Actions
+          # log blobs are not reachable from this project's working
+          # environment, and a report in the repo is also what the review desk
+          # can show. Keep the step's own exit status.
+          set +e
+          mkdir -p out/desk
+          {
+            echo "preflight $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo
+            python3 publish/preflight.py --queue queue.json 2>&1
+            echo
+            echo "exit $?"
+          } | tee out/desk/preflight.txt
+          grep -q '^exit 0$' out/desk/preflight.txt
+      - name: Record the report
+        if: always()
+        run: |
+          git config user.name  "soccertex-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add out/desk/preflight.txt
+          git diff --staged --quiet || {
+            git commit -m "preflight: $(date -u +%Y-%m-%dT%H:%MZ)"
+            git pull --rebase --autostash -q || true
+            git push
+          }
