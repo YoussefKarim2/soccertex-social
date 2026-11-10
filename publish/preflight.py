@@ -162,27 +162,40 @@ def check_schedule(all_items, pending) -> list[str]:
     return problems
 
 
+def instagram_posts_per_day(pending) -> int:
+    """How many Instagram posts the busiest pending day asks for."""
+    byday = defaultdict(int)
+    for i in pending:
+        if i["platform"] == "instagram":
+            byday[i["publish_at"][:10]] += 1
+    return max(byday.values(), default=0)
+
+
 def check_instagram(pending) -> list[str]:
-    from publish.instagram import Account, PublishError
     if not os.environ.get("IG_ACCESS_TOKEN"):
         print("token      IG_ACCESS_TOKEN not set — skipped")
         return []
+    # instagram.py lives beside this file and is not a package
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from instagram import Account, PublishError
+
     try:
         acct = Account.from_env()
         info = acct.check_token()
-        q = acct.quota()
     except PublishError as e:
         return [f"instagram token: {e}"]
 
-    used = q.get("quota_usage")
-    cap = q.get("config", {}).get("quota_total", 50)
-    print(f"token      reads @{info.get('username', '?')} "
-          f"(id {info.get('id', '?')})  OK")
+    used, cap = info["quota_used"], info["quota_total"]
+    print(f"token      reads @{info.get('username') or '?'} "
+          f"(id {info.get('id') or '?'})  OK")
     print(f"quota      {used} of {cap} posts used in the last 24h")
-    per_day = sum(1 for i in pending[:3] if i["platform"] == "instagram") or 2
-    if used is not None and cap - used < per_day:
+
+    need = instagram_posts_per_day(pending)
+    if used is not None and cap is not None and cap - used < need:
         return [f"publishing quota has room for {cap - used} more posts in the "
-                f"next 24h, cadence needs {per_day}"]
+                f"next 24h, and the cadence needs {need}"]
+    print(f"           cadence needs {need} a day — room for "
+          f"{cap - used} more right now  OK")
     return []
 
 
