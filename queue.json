@@ -50,8 +50,15 @@
       "video": "video/small-orders--social.mp4",
       "pillar": "3 Sourcing Math",
       "cover": "video/small-orders--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-10T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-10T12:30:00+00:00",
+      "result": {
+        "media_id": "18098779184425469",
+        "permalink": "https://www.instagram.com/reel/Dfmt3vShKrR/",
+        "published_at": "2026-11-11T14:40:21+0000",
+        "verified": true,
+        "late_minutes": 130
+      }
     },
     {
       "id": "sewing-line--instagram--20261111-1700",
