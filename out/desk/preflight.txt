@@ -1,4 +1,4 @@
-preflight 2026-11-11T11:22:53Z
+preflight 2026-11-11T11:27:22Z
 
 queue      91 items, 90 still to publish
 cadence    two Instagram reels a day (12:30 and 17:00 UTC) plus one LinkedIn post (11:30 UTC); auto-publish with a 24h veto window
@@ -7,7 +7,7 @@ media base https://youssefkarim2.github.io/soccertex-social
 schedule   30 days, 60 Instagram + 30 LinkedIn, ids unique  OK
 captions   90 checked, 288–945 chars, inside the limits  OK
 media      120 distinct URLs to check
-           all 120 reachable, 130 MB in total  OK
+           all 120 reachable, 203 MB in total  OK
 token      reads @soccertex.eg (id 17841417903547798)  OK
 quota      1 of 100 posts used in the last 24h
            cadence needs 2 a day — room for 99 more right now  OK
