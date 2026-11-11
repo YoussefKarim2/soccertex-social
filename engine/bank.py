@@ -69,40 +69,58 @@ T(id="price-drivers", pillar="3 Sourcing Math", kind="list", footage=MILL,
   li_tags="#sourcing #pricing"),
 
 T(id="europe-duty", pillar="3 Sourcing Math", kind="stat", footage=MILL,
-  hook="EGYPT SHIPS TO EUROPE DUTY-FREE", sub="And has since 2004. Most brands don't know it.",
-  overlay=("DUTY-FREE INTO THE EU", "Industrial tariffs removed in 2004."),
+  hook="EGYPT SHIPS TO EUROPE DUTY-FREE", sub="Since 2004. Most brands don't know it.",
+  overlay=("DUTY-FREE INTO THE EU", "No EU duty on Egyptian industrial goods."),
   stat=(46, "%", "Growth in Egyptian garment exports to Europe",
         "First seven months of 2026. Spain alone was up 86%."),
-  items=["EU–Egypt Association Agreement removed industrial tariffs in 2004",
-         "PEM Convention since 2013 allows diagonal cumulation",
-         "Turkish or EU fabric still counts as Egyptian origin",
+  items=["EU–Egypt Association Agreement in force since June 2004",
+         "Egyptian industrial goods enter the EU without duty",
+         "PEM origin rules let EU or Turkish fabric still count as Egyptian",
          "3 to 7 days by sea to Southern European ports"],
+  # The direction matters and the first draft blurred it. The agreement entered
+  # into force on 1 June 2004 and its implementation ran to 2019 — but the
+  # phase-out was on Egypt's side, for EU goods entering Egypt. For a European
+  # buyer importing Egyptian garments, duty-free is the position from 2004.
+  # Figures: Ready-Made Garments Export Council, via Egypt Today, 1 Sept 2026.
   caption="Egyptian garment exports to Europe grew 46% in the first seven months of 2026, to "
           "$930m. Spain alone was up 86%.\n\nThere's a structural reason most brands sourcing in "
-          "Asia don't know about.\n\n1. The EU–Egypt Association Agreement has removed tariffs on "
-          "industrial products since 2004.\n2. Egypt joined the PEM Convention in 2013 — diagonal "
-          "cumulation, so Turkish or European fabric still counts as Egyptian origin.\n\nIf your "
-          "fabric spec is European and you assumed that forced you into European manufacturing "
-          "prices, it doesn't.\n\nSources in the comments.",
+          "Asia don't know about.\n\n1. The EU–Egypt Association Agreement has been in force since "
+          "June 2004. Egyptian industrial goods — garments included — enter the EU without duty."
+          "\n2. Egypt is in the pan-Euro-Mediterranean origin zone, so Turkish or European fabric "
+          "can still count towards Egyptian origin.\n\nIf your fabric spec is European and you "
+          "assumed that forced you into European manufacturing prices, it doesn't.\n\nFigures: "
+          "Egypt's Ready-Made Garments Export Council, September 2026. Confirm your own HS code "
+          "with your customs broker — origin rules changed in 2025 and I'd rather you checked.",
   tags="#sourcing #nearshoring #teamwear #apparelmanufacturing #madeinegypt",
   li_tags="#sourcing #nearshoring"),
 
 T(id="pem-cumulation", pillar="3 Sourcing Math", kind="list", footage=MILL,
   hook="THE ORIGIN RULE NOBODY USES", sub="European fabric, Egyptian make, duty-free entry.",
-  overlay=("DIAGONAL CUMULATION", "PEM Convention, in force since 2013."),
+  overlay=("DIAGONAL CUMULATION", "Revised PEM rules, EU–Egypt, since March 2025."),
   items=["Specify a European or Turkish mill if your brand needs it",
          "Manufacture in Egypt at Egyptian conversion cost",
-         "The garment still qualifies as Egyptian origin",
+         "The garment can still qualify as Egyptian origin",
          "Enters the EU duty-free under the 2004 agreement",
-         "Get your broker to confirm the rule for your exact HS code"],
-  caption="Egypt joined the PEM Convention — the pan-Euro-Mediterranean rules of origin — in "
-          "October 2013.\n\nPEM allows diagonal cumulation. In plain terms: materials from any "
-          "other PEM member count as local content. The zone covers the EU, EFTA, Türkiye, the "
-          "Western Balkans and the Mediterranean partners.\n\nSo a garment cut and sewn in Egypt "
-          "from Italian fabric can still qualify as Egyptian origin and enter the EU duty-free."
-          "\n\nTwo caveats, because origin rules punish the careless: processing requirements vary "
-          "by category, and you need the EUR-MED paperwork right. Confirm with your customs broker "
-          "before building a cost model on it.",
+         "The paperwork changed in 2025 — check it with your broker"],
+  # CORRECTED 11 Nov 2026. The first version told buyers to "get the EUR-MED
+  # paperwork right". EUR-MED certificates and EUR-MED invoice declarations are
+  # withdrawn under the revised PEM rules, which the European Commission says
+  # have applied between the EU and Egypt since 11 March 2025, and which have
+  # been the only rules in force since 1 January 2026. Telling a procurement
+  # buyer to file a document that no longer exists is the kind of error this
+  # whole account is positioned against.
+  # Source: taxation-customs.ec.europa.eu, Pan-Euro-Mediterranean cumulation.
+  caption="Egypt signed the PEM Convention — the pan-Euro-Mediterranean rules of origin — on 9 "
+          "October 2013, and the revised version of those rules has applied between the EU and "
+          "Egypt since March 2025.\n\nPEM allows diagonal cumulation. In plain terms: materials "
+          "from another country in the zone can count towards local content. The zone covers the "
+          "EU, EFTA, Türkiye, the Western Balkans and the Mediterranean partners.\n\nSo a garment "
+          "cut and sewn in Egypt from Italian fabric can still qualify as Egyptian origin and "
+          "enter the EU duty-free.\n\nTwo caveats, because origin rules punish the careless. "
+          "Processing requirements vary by category. And the paperwork has changed — the EUR-MED "
+          "certificate is gone, and since January 2026 only the revised rules apply. If you last "
+          "looked at this before 2025, look again.\n\nConfirm your category with your customs "
+          "broker before building a cost model on it.",
   tags="#sourcing #customs #nearshoring #apparelmanufacturing #teamwear",
   li_tags="#sourcing #customs"),
 
@@ -157,7 +175,7 @@ T(id="small-orders", pillar="3 Sourcing Math", kind="list", footage=SEW,
           "reflection on your brand.\n\nFour lines, 2,000 pieces a day, four decoration methods in "
           "one building — that's a structure built for short custom runs.\n\nIf you've been "
           "ghosted over a small order, send us the quantity.",
-  tags="#clothingbrandowner #cutandsew #clothingmanfacturer #teamwear #smallbusiness #startup",
+  tags="#clothingbrandowner #cutandsew #clothingmanufacturer #teamwear #smallbusiness #startup",
   li_tags="#sourcing #manufacturing"),
 
 T(id="trading-company", pillar="3 Sourcing Math", kind="list", footage=STITCH,
@@ -173,7 +191,7 @@ T(id="trading-company", pillar="3 Sourcing Math", kind="list", footage=STITCH,
           "jerseys, shoes and backpacks in one building.\n\nNone of this makes a trading company a "
           "bad partner. But you should know which you're buying from, because it changes who "
           "controls your lead time.\n\nAsk for a live walkthrough. We'll do one this week.",
-  tags="#sourcing #cutandsew #clothingbrandowner #clothingmanfacturer #manufacturing #teamwear",
+  tags="#sourcing #cutandsew #clothingbrandowner #clothingmanufacturer #manufacturing #teamwear",
   li_tags="#sourcing #manufacturing"),
 
 T(id="buyer-questions", pillar="3 Sourcing Math", kind="list", footage=CUT,
@@ -214,9 +232,15 @@ T(id="decoration", pillar="2 Kit School", kind="process", footage=STITCH,
   li_tags="#manufacturing"),
 
 T(id="gsm", pillar="2 Kit School", kind="stat", footage=MILL,
-  hook="GSM IS THE ONLY FABRIC NUMBER THAT MATTERS", sub="And almost nobody explains it.",
+  # "THE ONLY number that matters" was an overclaim, and the bank contradicted
+  # it twice over: fabric-glossary says recovery is the one brands skip, and
+  # cheap-vs-good tells buyers to ask for GSM *and* seam type. The stat card
+  # also read "150 GSM — Match jersey" while the list underneath put 150 at the
+  # bottom of the training-top band. Same screen, two different claims.
+  hook="THE ONE FABRIC NUMBER NOBODY EXPLAINS", sub="And it's on every quote you'll ever read.",
   overlay=("IT'S JUST YARN", "Lighter isn't cheaper by accident. It's less of it."),
-  stat=(150, " GSM", "Match jersey", "Grams per square metre. It is fabric weight."),
+  stat=(150, " GSM", "Where a match jersey tops out",
+        "Grams per square metre. Above this you're buying a training top."),
   items=["130–150 GSM — match jersey", "150–180 GSM — training top",
          "180–220 GSM — polo, warm-up", "240–320 GSM — hoodie, sweat"],
   caption="GSM = grams per square metre. It's fabric weight, and it's the number that matters "
@@ -259,7 +283,7 @@ T(id="cheap-vs-good", pillar="2 Kit School", kind="compare", footage=STITCH,
           "the badge is applied. Printed vinyl peels. Sublimated ink doesn't.\n\nNext time a "
           "factory quotes you, ask for GSM and seam type. Those two numbers tell you more than the "
           "price does.",
-  tags="#footballkit #teamwear #cutandsew #clothingmanfacturer #jerseycheck #kitdesign",
+  tags="#footballkit #teamwear #cutandsew #clothingmanufacturer #jerseycheck #kitdesign",
   li_tags="#sourcing"),
 
 T(id="seams", pillar="2 Kit School", kind="list", footage=STITCH,
@@ -310,7 +334,7 @@ T(id="white-kit", pillar="2 Kit School", kind="list", footage=MILL,
           "Low-grade fabric with uneven whiteness to begin with. That one IS on the factory."
           "\n\nAsk for the whiteness grade on white polyester. It's a spec, and it's rarely "
           "volunteered.",
-  tags="#footballkit #teamwear #cutandsew #fabric #kitcare #clothingmanfacturer",
+  tags="#footballkit #teamwear #cutandsew #fabric #kitcare #clothingmanufacturer",
   li_tags="#sourcing"),
 
 T(id="recovery-test", pillar="2 Kit School", kind="list", footage=STITCH,
@@ -324,7 +348,7 @@ T(id="recovery-test", pillar="2 Kit School", kind="list", footage=STITCH,
           "instantly, good recovery. If it stays slightly open, that's the shirt that'll look "
           "tired by March.\n\nIt's a two-second test and it tells you more than the composition "
           "label does.",
-  tags="#fabric #cutandsew #teamwear #clothingmanfacturer #footballkit #fabrictest",
+  tags="#fabric #cutandsew #teamwear #clothingmanufacturer #footballkit #fabrictest",
   li_tags="#sourcing"),
 
 T(id="factory-questions", pillar="2 Kit School", kind="list", footage=CUT,
@@ -422,12 +446,17 @@ T(id="embroidery", pillar="1 Inside the Floor", kind="process", footage=STITCH,
           "swapping between them as the design builds. Thread sits on top of the fabric, which is "
           "why it feels the way it does and why it adds weight.\n\nBest for crests and sponsor "
           "marks. Not for full-garment graphics — that's what sublimation is for.",
-  tags="#embroidery #satisfying #cutandsew #teamwear #clothingmanfacturer #howitsmade",
+  tags="#embroidery #satisfying #cutandsew #teamwear #clothingmanufacturer #howitsmade",
   li_tags="#manufacturing"),
 
 T(id="heat-press", pillar="1 Inside the Floor", kind="process", footage=None,
   hook="NOTHING. THEN EVERYTHING.", sub="Sixty seconds at 200°C.",
-  overlay=("HEAT TRANSFER", "Film applied under heat and pressure."),
+  # The overlay said HEAT TRANSFER while the items and caption described
+  # SUBLIMATION — two different processes, and the decoration post teaches the
+  # difference. Heat transfer lays a film on the surface; sublimation turns ink
+  # to gas that bonds inside the fibre. Getting that wrong in our own video
+  # undoes the post that explains it.
+  overlay=("SUBLIMATION", "Ink turns to gas and bonds inside the fibre."),
   machine="press",
   items=["Blank polyester goes in with a paper transfer",
          "The ink turns to gas and bonds inside the fibre",
@@ -437,7 +466,7 @@ T(id="heat-press", pillar="1 Inside the Floor", kind="process", footage=None,
           "transfer. The ink turns to gas, bonds inside the fibre, and the paper comes off grey."
           "\n\nFull-garment graphics, no hand-feel, nothing to peel.\n\nThe trade-off: polyester "
           "only, and it can't print white onto a dark base. Those are real limits, not fine print.",
-  tags="#sublimation #satisfying #cutandsew #clothingmanfacturer #teamwear #howitsmade",
+  tags="#sublimation #satisfying #cutandsew #clothingmanufacturer #teamwear #howitsmade",
   li_tags="#manufacturing"),
 
 T(id="nameset", pillar="4 Built for Clubs", kind="list", footage=STITCH,

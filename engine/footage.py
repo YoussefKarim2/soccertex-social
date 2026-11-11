@@ -78,7 +78,7 @@ class FootageScene(Scene):
 
     def __init__(self, path, seconds=4.0, title=None, sub=None, credit=None,
                  start=0.0, speed=1.0, source="stock", grade=True,
-                 darken=0.55, label_stock=True):
+                 darken=0.55, label_stock=True, decode_scale=1.0):
         super().__init__(seconds)
         self.path = Path(path)
         if not self.path.exists():
@@ -93,14 +93,25 @@ class FootageScene(Scene):
         self.start, self.speed, self.source = start, speed, source
         self.grade, self.darken, self.label_stock = grade, darken, label_stock
         self._proc = None
-        self._bytes = W * H * 3
+        # DECODE RESOLUTION
+        # -----------------
+        # Decoding straight to the 1080x1920 canvas throws the proxy's extra
+        # pixels away before anything can crop into them, so a close-up was
+        # always an upscale of the delivery frame — the reason every tight
+        # shot in the first narrated cut looked soft. A scene that intends to
+        # crop in asks for a bigger decode and does its own resize at the end.
+        s = max(1.0, float(decode_scale))
+        self.dw = int(W * s) // 2 * 2
+        self.dh = int(H * s) // 2 * 2
+        self.decode_scale = self.dw / W
+        self._bytes = self.dw * self.dh * 3
 
     # -- frame source ------------------------------------------------------
     def _open(self):
         if shutil.which("ffmpeg") is None:
             raise RuntimeError("ffmpeg not installed")
-        vf = (f"scale={W}:{H}:force_original_aspect_ratio=increase,"
-              f"crop={W}:{H},fps={FPS}")
+        vf = (f"scale={self.dw}:{self.dh}:force_original_aspect_ratio=increase,"
+              f"crop={self.dw}:{self.dh},fps={FPS}")
         if self.speed != 1.0:
             vf = f"setpts={1/self.speed:.4f}*PTS," + vf
         self._proc = subprocess.Popen(
@@ -132,7 +143,7 @@ class FootageScene(Scene):
             # the clip cannot be decoded at all — fail loudly rather than
             # writing a short frame and corrupting the encoder's stream
             raise RuntimeError(f"no frames decoded from {self.path}")
-        return Image.frombytes("RGB", (W, H), buf)
+        return Image.frombytes("RGB", (self.dw, self.dh), buf)
 
     def close(self):
         """Stop the decoder. Video.write calls this when the scene is done —
@@ -160,6 +171,8 @@ class FootageScene(Scene):
     # -- rendering ---------------------------------------------------------
     def frame(self, i, n):
         img = self._next()
+        if img.size != (W, H):          # a plain footage scene never crops in
+            img = img.resize((W, H), Image.LANCZOS)
 
         if self.grade:
             img = ImageEnhance.Color(img).enhance(0.88)
