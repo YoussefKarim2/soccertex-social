@@ -71,8 +71,15 @@
       "video": "video/sewing-line--social.mp4",
       "pillar": "1 Inside the Floor",
       "cover": "video/sewing-line--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-10T17:00:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-10T17:00:00+00:00",
+      "result": {
+        "media_id": "18109778462221687",
+        "permalink": "https://www.instagram.com/reel/DfndP7ZOuca/",
+        "published_at": "2026-11-11T21:34:21+0000",
+        "verified": true,
+        "late_minutes": 273
+      }
     },
     {
       "id": "season-calendar--linkedin--20261112-1130",
