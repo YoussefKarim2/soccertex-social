@@ -107,8 +107,15 @@
       "video": "video/trading-company--social.mp4",
       "pillar": "3 Sourcing Math",
       "cover": "video/trading-company--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-11T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-11T12:30:00+00:00",
+      "result": {
+        "media_id": "18116840144140083",
+        "permalink": "https://www.instagram.com/reel/DfprP5wpwFn/",
+        "published_at": "2026-11-12T18:15:08+0000",
+        "verified": true,
+        "late_minutes": 345
+      }
     },
     {
       "id": "embroidery--instagram--20261112-1700",
@@ -121,8 +128,15 @@
       "video": "video/embroidery--social.mp4",
       "pillar": "1 Inside the Floor",
       "cover": "video/embroidery--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-11T17:00:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-11T17:00:00+00:00",
+      "result": {
+        "media_id": "18421307896153277",
+        "permalink": "https://www.instagram.com/reel/DfprXM_TYsU/",
+        "published_at": "2026-11-12T18:16:10+0000",
+        "verified": true,
+        "late_minutes": 75
+      }
     },
     {
       "id": "price-drivers--linkedin--20261113-1130",
