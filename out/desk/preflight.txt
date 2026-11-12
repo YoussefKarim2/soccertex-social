@@ -1,18 +1,18 @@
-preflight 2026-11-11T14:44:08Z
+preflight 2026-11-12T12:41:47Z
 
-queue      91 items, 89 still to publish
+queue      91 items, 88 still to publish
 cadence    two Instagram reels a day (12:30 and 17:00 UTC) plus one LinkedIn post (11:30 UTC); auto-publish with a 24h veto window
 media base https://youssefkarim2.github.io/soccertex-social
 
-schedule   30 days, 59 Instagram + 30 LinkedIn, ids unique  OK
-           1 overdue and waiting for the next run
-captions   89 checked, 288–945 chars, inside the limits  OK
+schedule   30 days, 58 Instagram + 30 LinkedIn, ids unique  OK
+           3 overdue and waiting for the next run
+captions   88 checked, 288–945 chars, inside the limits  OK
 media      120 distinct URLs to check
            all 120 reachable, 203 MB in total  OK
 token      reads @soccertex.eg (id 17841417903547798)  OK
 quota      2 of 100 posts used in the last 24h
            cadence needs 2 a day — room for 98 more right now  OK
-lateness   1 posts measured, median 130 min, worst 130 min (small-orders--instagram--20261111-1230)
+lateness   2 posts measured, median 273 min, worst 273 min (sewing-line--instagram--20261111-1700)
            a post landing over an hour late means the runner is not firing often enough for the slot
 
 preflight clean — every pending post has everything it needs
