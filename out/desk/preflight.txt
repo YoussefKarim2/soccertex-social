@@ -1,4 +1,4 @@
-preflight 2026-11-12T12:41:47Z
+preflight 2026-11-12T15:38:13Z
 
 queue      91 items, 88 still to publish
 cadence    two Instagram reels a day (12:30 and 17:00 UTC) plus one LinkedIn post (11:30 UTC); auto-publish with a 24h veto window
@@ -10,8 +10,8 @@ captions   88 checked, 288–945 chars, inside the limits  OK
 media      120 distinct URLs to check
            all 120 reachable, 203 MB in total  OK
 token      reads @soccertex.eg (id 17841417903547798)  OK
-quota      2 of 100 posts used in the last 24h
-           cadence needs 2 a day — room for 98 more right now  OK
+quota      1 of 100 posts used in the last 24h
+           cadence needs 2 a day — room for 99 more right now  OK
 lateness   2 posts measured, median 273 min, worst 273 min (sewing-line--instagram--20261111-1700)
            a post landing over an hour late means the runner is not firing often enough for the slot
 
