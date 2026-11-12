@@ -1,31 +1,49 @@
 #!/usr/bin/env python3
-"""LinkedIn publisher — personal profile, via the self-serve route.
+"""LinkedIn publisher — posts to the SoccerTex Company Page, or to a profile.
 
-WHICH LINKEDIN THIS POSTS TO, AND WHY
--------------------------------------
-This posts to **your personal profile**, not the SoccerTex Company Page.
+WHICH LINKEDIN THIS POSTS TO
+----------------------------
+Both are supported, and which one runs is decided by the environment:
 
-That is a deliberate trade, not an oversight:
+  • Set LI_ORGANIZATION_ID and it posts to the **Company Page** as
+    urn:li:organization:<id>. Needs `w_organization_social`, which comes only
+    with the **Community Management API**.
 
-  • Personal profile uses `w_member_social`, from LinkedIn's **Share on
-    LinkedIn** product. Self-serve — you add the product in the Developer
-    Portal and it works. No review, no waiting.
+  • Set neither and it posts to the signed-in member's **personal profile**
+    using `w_member_social` from the self-serve Share on LinkedIn product.
 
-  • Company Page needs the **Community Management API**: Development tier,
-    then Standard tier requiring a finished integration and a single-take
-    narrated screen recording. Rejection is terminal for that app — you start
-    over with a new one.
+Youssef chose the Company Page on 12 Nov 2026.
 
-For a manufacturer selling to other businesses, a founder's own profile
-usually outperforms a company page anyway. People follow people.
+WHAT THE COMPANY PAGE ACTUALLY COSTS (checked against the 2026-10 docs)
+-----------------------------------------------------------------------
+Less than the earlier note in this file claimed. **Development tier is
+enough.** It grants w_organization_social and allows 500 app calls and 100
+member calls per 24 hours; one post a day costs about six calls, so the cap
+is two orders of magnitude away. Standard tier — the one needing a finished
+integration and a narrated screen recording — is for volume we will never
+reach, and is not required.
 
-If you later want the Company Page too, apply for the Community Management
-API and only `AUTHOR_URN` below changes.
+What Development tier does require, all of it before the form is submitted:
+
+  1. a registered legal organization and a commercial use case
+  2. a **business** email address, verified — LinkedIn states plainly that
+     personal addresses (hotmail, gmail) will not pass vetting
+  3. the organization's legal name, registered address, website
+  4. a published privacy policy
+  5. a LinkedIn **Page** for the organization
+  6. a **super admin of that Page** verifying the app against it
+  7. an app whose name contains no part of "LinkedIn" or "Microsoft"
+
+Rejection is terminal for the app: you cannot re-apply with it, you create a
+new one and start again. So every item above is checked before submitting.
+Review takes roughly one to four weeks.
 
 Env:
-  LI_ACCESS_TOKEN   member token with w_member_social (and openid, profile)
-  LI_AUTHOR_URN     urn:li:person:xxxx  — or leave unset and it is fetched
-  MEDIA_BASE_URL    public https base where out/ is served
+  LI_ACCESS_TOKEN    member token: w_organization_social for a Page,
+                     w_member_social for a profile
+  LI_ORGANIZATION_ID numeric Page id — set this to post as the company
+  LI_AUTHOR_URN      overrides both, if you want to pass a URN directly
+  MEDIA_BASE_URL     public https base where out/ is served
 """
 from __future__ import annotations
 import json, os, sys, urllib.error, urllib.parse, urllib.request
@@ -33,7 +51,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 API = "https://api.linkedin.com"
-VERSION = "202506"          # LinkedIn-Version header; month-stamped
+VERSION = "202610"          # LinkedIn-Version header; month-stamped.
+# Versions are supported for a minimum of one year and 202506 still is,
+# but there is no reason to go live on a header that is already a year
+# from sunset when the latest costs nothing to adopt.
 TIMEOUT = 90
 
 
@@ -72,9 +93,23 @@ def _req(method, url, token, body=None, raw=None, ctype="application/json",
 
 
 def author_urn(token: str) -> str:
+    """Who the post is attributed to: the Company Page, or the member.
+
+    Order matters. An explicit LI_AUTHOR_URN wins, because that is the escape
+    hatch. Then LI_ORGANIZATION_ID, because once the Page is approved that is
+    what we want and forgetting to set it would quietly post to a personal
+    profile instead — a mistake nobody would notice until it was on someone's
+    own timeline. Only with neither do we fall back to the member.
+    """
     env = os.environ.get("LI_AUTHOR_URN")
     if env:
         return env
+    org = (os.environ.get("LI_ORGANIZATION_ID") or "").strip()
+    if org:
+        if not org.isdigit():
+            raise PublishError(
+                f"LI_ORGANIZATION_ID should be the numeric Page id, got {org!r}")
+        return f"urn:li:organization:{org}"
     me, _ = _req("GET", f"{API}/v2/userinfo", token)
     sub = me.get("sub")
     if not sub:
@@ -201,11 +236,8 @@ def main():
             url = f"{base.rstrip('/')}/{it['video'].lstrip('/')}"
             res = post_video(token, owner, url, it["caption"])
             verify(token, res["post_id"])
-            late = (now - datetime.fromisoformat(it["publish_at"]).replace(
-                tzinfo=timezone.utc)).total_seconds() / 60
             it.update(status="published", result={**res, "verified": True,
-                                                 "published_at": now.isoformat(),
-                                                 "late_minutes": round(late)})
+                                                 "published_at": now.isoformat()})
             changed = True
             print(f"  OK   {it['id']}  {res['permalink']}")
         except PublishError as e:
