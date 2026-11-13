@@ -164,8 +164,15 @@
       "video": "video/buyer-questions--social.mp4",
       "pillar": "3 Sourcing Math",
       "cover": "video/buyer-questions--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-12T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-12T12:30:00+00:00",
+      "result": {
+        "media_id": "18116873282131166",
+        "permalink": "https://www.instagram.com/reel/DfsTOUHBTdD/",
+        "published_at": "2026-11-13T18:42:54+0000",
+        "verified": true,
+        "late_minutes": 372
+      }
     },
     {
       "id": "heat-press--instagram--20261113-1700",
@@ -178,8 +185,15 @@
       "video": "video/heat-press--social.mp4",
       "pillar": "1 Inside the Floor",
       "cover": "video/heat-press--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-12T17:00:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-12T17:00:00+00:00",
+      "result": {
+        "media_id": "17898786390417666",
+        "permalink": "https://www.instagram.com/reel/DfsTTFXhMDv/",
+        "published_at": "2026-11-13T18:43:32+0000",
+        "verified": true,
+        "late_minutes": 102
+      }
     },
     {
       "id": "europe-duty--linkedin--20261114-1130",
