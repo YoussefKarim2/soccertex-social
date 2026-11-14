@@ -32,6 +32,12 @@ jobs:
           IG_USER_ID:      ${{ vars.IG_USER_ID }}
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           LI_ACCESS_TOKEN: ${{ secrets.LI_ACCESS_TOKEN }}
+          # The Company Page id. With this set the publisher posts as
+          # urn:li:organization:<id>; without it it would quietly fall back to
+          # whichever member the token belongs to — the company's content on
+          # someone's personal timeline, which nobody would notice until it
+          # was there.
+          LI_ORGANIZATION_ID: ${{ vars.LI_ORGANIZATION_ID }}
           LI_AUTHOR_URN:   ${{ secrets.LI_AUTHOR_URN }}
           MEDIA_BASE_URL:  ${{ vars.MEDIA_BASE_URL }}
         run: |
