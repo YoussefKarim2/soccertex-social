@@ -130,13 +130,30 @@ def check_schedule(all_items, pending) -> list[str]:
     for i in pending:
         expected[i["platform"]] += 1
 
+    # What a full day is supposed to look like comes from the schedule itself
+    # rather than a number typed in here. This check used to assert "2
+    # Instagram" and say nothing about LinkedIn, so when LinkedIn went to two
+    # posts a day it would have watched the wrong half of the schedule and
+    # reported a clean run with a broken one.
+    try:
+        from engine.queue_build import POSTS_PER_DAY as want
+    except Exception:
+        # the queue has to stand on its own if the engine is not importable:
+        # take the busiest day as the intended shape
+        want = {}
+        for d_items in byday.values():
+            for plat, n in Counter(i["platform"] for i in d_items).items():
+                want[plat] = max(want.get(plat, 0), n)
+
     days = sorted(byday)
     # the first and last day of the horizon can be partial; judge the middle
     for d in days[1:-1] if len(days) > 2 else days:
         day = byday[d]
         per = Counter(i["platform"] for i in day)
-        if per.get("instagram") != 2:
-            problems.append(f"{d}: {per.get('instagram', 0)} Instagram posts, expected 2")
+        for plat, n in sorted(want.items()):
+            if per.get(plat, 0) != n:
+                problems.append(
+                    f"{d}: {per.get(plat, 0)} {plat} posts, expected {n}")
         topics = [i["topic"] for i in day]
         if len(set(topics)) != len(topics):
             dupe = [t for t, n in Counter(topics).items() if n > 1]
@@ -152,8 +169,10 @@ def check_schedule(all_items, pending) -> list[str]:
                and datetime.fromisoformat(i["publish_at"]).replace(
                    tzinfo=timezone.utc) < now]
     if not problems:
-        print(f"schedule   {len(days)} days, {expected['instagram']} Instagram "
-              f"+ {expected['linkedin']} LinkedIn, ids unique  OK")
+        shape = ", ".join(f"{n}/day {p}" for p, n in sorted(want.items()))
+        totals = ", ".join(f"{expected[p]} {p}" for p in sorted(expected))
+        print(f"schedule   {len(days)} days · {shape} · {totals} · "
+              f"ids unique  OK")
     if overdue:
         # not a failure — the publisher picks these up on its next run — but it
         # is the number to watch, because a growing backlog means the runner is

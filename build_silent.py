@@ -226,10 +226,21 @@ SCRIPTS = {
 }
 
 
-def build(tid: str) -> Video:
+# The two platforms take the same cut. The reel earns attention the same way on
+# both, and rendering two genuinely different edits would double the work to
+# chase a difference nobody watching would notice. What does change is the
+# last card: Instagram sends people to the profile link, LinkedIn can point
+# straight at the page with the action on it.
+CLOSE = {
+    "social":   ("SEE THE FLOOR.", "soccertexhq.com · Cairo, Egypt"),
+    "business": ("SEE THE FLOOR.", "soccertexhq.com/get-your-quote"),
+}
+
+
+def build(tid: str, variant: str = "social") -> Video:
     spec = SCRIPTS[tid]
     topic = next(t for t in BANK if t["id"] == tid)
-    out = OUT / f"{tid}--social.mp4"
+    out = OUT / f"{tid}--{variant}.mp4"
     v = Video(out)
 
     # 1. the hook — flat colour, no footage, readable in one glance
@@ -273,21 +284,29 @@ def build(tid: str) -> Video:
                         rest[-1]["end"], spec.get("chapters"), shown)
 
     # 3. the close
-    v.add(TypeScene(["SEE THE FLOOR."], seconds=1.8, bg=Brand.PITCH,
-                    accent=Brand.MINT, sub="soccertexhq.com · Cairo, Egypt",
-                    size=96))
+    line, sub = CLOSE[variant]
+    v.add(TypeScene([line], seconds=1.8, bg=Brand.PITCH,
+                    accent=Brand.MINT, sub=sub, size=96))
     return v
 
 
 def main():
-    which = sys.argv[1:] or list(SCRIPTS)
+    args = sys.argv[1:]
+    # --social / --business render one platform's cut; neither flag renders both
+    variants = [a.lstrip("-") for a in args if a.startswith("--")]
+    variants = variants or ["social", "business"]
+    bad_v = [v for v in variants if v not in CLOSE]
+    if bad_v:
+        sys.exit(f"unknown variant: {', '.join(bad_v)}")
+    which = [a for a in args if not a.startswith("--")] or list(SCRIPTS)
     bad = [t for t in which if t not in SCRIPTS]
     if bad:
         sys.exit(f"no script for: {', '.join(bad)}")
     OUT.mkdir(parents=True, exist_ok=True)
     import subprocess
-    for tid in which:
-        v = build(tid)
+    for tid, variant in ((t, v) for t in which for v in variants):
+        v_ = variant
+        v = build(tid, v_)
         v.write(music=True, bpm=126, quiet=False)
         # Same guard build_all.py got after a 1.8s render came within two days
         # of publishing: trust the file on disk, not the composer's intent.
@@ -297,9 +316,9 @@ def main():
         got = float(r.stdout.strip() or 0)
         if got < v.seconds * 0.9 or got < 8.0:
             v.out.unlink(missing_ok=True)
-            raise RuntimeError(f"{tid}: only {got:.1f}s on disk, "
+            raise RuntimeError(f"{tid}--{v_}: only {got:.1f}s on disk, "
                                f"composer wrote {v.seconds:.1f}s — deleted")
-        print(f"  {tid}: {got:.1f}s on disk, {len(v.scenes)} cuts  OK")
+        print(f"  {tid}--{v_}: {got:.1f}s on disk, {len(v.scenes)} cuts  OK")
 
 
 if __name__ == "__main__":
