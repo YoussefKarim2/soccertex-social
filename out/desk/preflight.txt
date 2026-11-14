@@ -1,20 +1,21 @@
-preflight 2026-11-14T13:48:47Z
+preflight 2026-11-14T19:36:19Z
 
-2 problem(s) would stop a post going out:
+3 problem(s) would stop a post going out:
   - 2026-11-12: 0 Instagram posts, expected 2
   - 2026-11-13: 0 Instagram posts, expected 2
-queue      91 items, 84 still to publish
+  - 2026-11-14: 1 Instagram posts, expected 2
+queue      91 items, 83 still to publish
 cadence    two Instagram reels a day (12:30 and 17:00 UTC) plus one LinkedIn post (11:30 UTC); auto-publish with a 24h veto window
 media base https://youssefkarim2.github.io/soccertex-social
 
            5 overdue and waiting for the next run
-captions   84 checked, 288–945 chars, inside the limits  OK
+captions   83 checked, 288–945 chars, inside the limits  OK
 media      120 distinct URLs to check
            all 120 reachable, 203 MB in total  OK
 token      reads @soccertex.eg (id 17841417903547798)  OK
-quota      2 of 100 posts used in the last 24h
-           cadence needs 2 a day — room for 98 more right now  OK
-lateness   6 posts measured, median 273 min, worst 372 min (buyer-questions--instagram--20261113-1230)
+quota      1 of 100 posts used in the last 24h
+           cadence needs 2 a day — room for 99 more right now  OK
+lateness   7 posts measured, median 265 min, worst 372 min (buyer-questions--instagram--20261113-1230)
            a post landing over an hour late means the runner is not firing often enough for the slot
 
 
