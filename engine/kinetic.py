@@ -87,7 +87,9 @@ class Chapter:
         lw = d.textlength(self.label.upper(), font=fl)
         pad, gapx = 20, 22
         boxw = int((nw + pad * 2 + gapx + lw) * p)
-        y = int(H * 0.17)
+        # 0.17 put the chip hard against the library-footage label, which now
+        # lives at 15%; this leaves a clear gap under it.
+        y = int(H * 0.185)
         d.rectangle([SAFE, y, SAFE + int((nw + pad * 2) * p), y + 76], fill=Brand.PITCH)
         if p > 0.4:
             d.text((SAFE + pad, y + 9), num, font=fn, fill=Brand.WHITE)
