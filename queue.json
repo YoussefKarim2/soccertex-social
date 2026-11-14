@@ -242,8 +242,15 @@
       "video": "video/nameset--social.mp4",
       "pillar": "4 Built for Clubs",
       "cover": "video/nameset--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-13T17:00:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-13T17:00:00+00:00",
+      "result": {
+        "media_id": "18188453647438686",
+        "permalink": "https://www.instagram.com/reel/DfvFlMBhGX9/",
+        "published_at": "2026-11-14T20:41:20+0000",
+        "verified": true,
+        "late_minutes": 221
+      }
     },
     {
       "id": "pem-cumulation--linkedin--20261115-1130",
