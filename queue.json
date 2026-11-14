@@ -221,8 +221,15 @@
       "video": "video/decoration--social.mp4",
       "pillar": "2 Kit School",
       "cover": "video/decoration--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-13T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-13T12:30:00+00:00",
+      "result": {
+        "media_id": "18215086009368240",
+        "permalink": "https://www.instagram.com/reel/DfursODSIIP/",
+        "published_at": "2026-11-14T16:55:13+0000",
+        "verified": true,
+        "late_minutes": 265
+      }
     },
     {
       "id": "nameset--instagram--20261114-1700",
