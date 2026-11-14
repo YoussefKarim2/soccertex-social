@@ -1,7 +1,10 @@
 name: Render content
 on:
-  schedule:
-    - cron: "0 3 * * 0"          # Sundays 03:00 UTC
+  # NO SCHEDULE, ON PURPOSE. This used to run every Sunday at 03:00 UTC and
+  # had never fired. Had it fired it would have re-rendered the library with
+  # whatever code was on main and rebuilt the queue — and the queue rebuild of
+  # the time dropped every post still waiting. Videos are now changed by the
+  # video-editor agent, one at a time, each checked before it is pushed.
   workflow_dispatch:
     inputs:
       force: { description: "Re-render everything", type: boolean, default: false }

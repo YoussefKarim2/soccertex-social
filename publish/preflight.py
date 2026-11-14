@@ -145,7 +145,11 @@ def check_schedule(all_items, pending) -> list[str]:
             for plat, n in Counter(i["platform"] for i in d_items).items():
                 want[plat] = max(want.get(plat, 0), n)
 
-    days = sorted(byday)
+    # Only days still ahead. Past days hold whatever is overdue, which is a
+    # timing matter reported below — not a hole in the schedule. Counting them
+    # raised "0 Instagram posts, expected 2" for days whose reels had gone out.
+    today = datetime.now(timezone.utc).date().isoformat()
+    days = sorted(d for d in byday if d > today)
     # the first and last day of the horizon can be partial; judge the middle
     for d in days[1:-1] if len(days) > 2 else days:
         day = byday[d]

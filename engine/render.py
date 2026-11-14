@@ -24,6 +24,15 @@ W, H, FPS = 1080, 1920, 30          # 9:16, the only aspect all three platforms 
 SAFE = int(W * 0.08)                 # 8% side margin
 TOP_SAFE = int(H * 0.12)             # platform UI eats top and bottom
 BOT_SAFE = int(H * 0.16)
+# WHERE THE "LIBRARY FOOTAGE" LABEL GOES
+# --------------------------------------
+# Meta's own guidance for Reels keeps the top 14% and the bottom 35% of the
+# frame clear: the bottom third is covered by the account name, the caption
+# and the audio row. The label used to sit at 86% of the height — inside that
+# stack — so on Instagram the one line that says "this is not our factory"
+# was hidden behind the app's own text. It now sits just under the top line,
+# where nothing covers it, and large enough to read on a phone.
+LABEL_Y = int(H * 0.150)
 
 
 class Brand:

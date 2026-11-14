@@ -19,7 +19,8 @@ from pathlib import Path
 
 from engine.render import Video, Brand, FPS
 from engine.silent import (beats, Captions, MeterScene, RaceScene, TypeScene,
-                           footage_run, CUT)
+                           footage_run, CUT, hook_overlay)
+from engine.reel import Shot
 from engine.bank import BANK
 
 ROOT = Path(__file__).resolve().parent
@@ -231,9 +232,20 @@ SCRIPTS = {
 # chase a difference nobody watching would notice. What does change is the
 # last card: Instagram sends people to the profile link, LinkedIn can point
 # straight at the page with the action on it.
+# The hook opens on SEW_V, so the body starts on a different plate.
+BODY = PLATES[1:] + PLATES[:1]
+
+# THE CLOSE ASKS FOR THE SEND
+# ---------------------------
+# Instagram's head has said plainly which signals rank a reel: watch time,
+# likes and sends — and that sends per reach is what carries it to people who
+# do not follow the account. "See the floor" asked for nothing. The Instagram
+# cut now ends on the one action that widens reach; the LinkedIn cut ends on
+# the quote page, because that audience is the buyer rather than the buyer's
+# friend.
 CLOSE = {
-    "social":   ("SEE THE FLOOR.", "soccertexhq.com · Cairo, Egypt"),
-    "business": ("SEE THE FLOOR.", "soccertexhq.com/get-your-quote"),
+    "social":   ("SEND THIS TO WHOEVER ORDERS YOUR KIT.", "soccertexhq.com · Cairo, Egypt"),
+    "business": ("GET A STRAIGHT QUOTE.", "soccertexhq.com/get-your-quote"),
 }
 
 
@@ -243,9 +255,12 @@ def build(tid: str, variant: str = "social") -> Video:
     out = OUT / f"{tid}--{variant}.mp4"
     v = Video(out)
 
-    # 1. the hook — flat colour, no footage, readable in one glance
-    v.add(TypeScene(spec["hook"], seconds=1.9, sub=spec.get("hook_sub"),
-                    bg=Brand.DEEP, size=104))
+    # 1. the hook — the same words, now over a moving plate from frame 0.
+    #    A flat card for the first two seconds was the weakest opening the
+    #    format could have: it is where the swipe happens and nothing moved.
+    v.add(Shot(SEW_V, 1.9, overlay=hook_overlay(spec["hook"], spec.get("hook_sub")),
+               tight=1.5, focus=(.5, .5), zoom=1.10, blur_edge=0, scrim=0.0,
+               start=4.0))
 
     # 2. the body, as caption beats over cuts, with a drawn scene or a hard
     #    turn spliced in at the line the script reaches it
@@ -263,10 +278,10 @@ def build(tid: str, variant: str = "social") -> Video:
 
     shown = set()
     if split_at is None:
-        footage_run(v, PLATES, caps, 0.0, total, spec.get("chapters"), shown)
+        footage_run(v, BODY, caps, 0.0, total, spec.get("chapters"), shown)
     else:
         cut_t = line_time(split_at)
-        footage_run(v, PLATES, caps, 0.0, cut_t, spec.get("chapters"), shown)
+        footage_run(v, BODY, caps, 0.0, cut_t, spec.get("chapters"), shown)
         if spec.get("draw"):
             v.add(spec["draw"][1]())
         else:

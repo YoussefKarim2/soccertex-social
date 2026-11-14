@@ -244,6 +244,46 @@ class TypeScene(Scene):
         return img
 
 
+def hook_overlay(lines, sub=None, size=104):
+    """The hook, drawn over a moving plate.
+
+    The reels used to open on two seconds of flat colour with a sentence on
+    it. That is the two seconds in which a viewer decides whether to stay, and
+    nothing in them moved. The words are the same; they now sit on footage
+    from the very first frame, fully legible at frame 0 — no fade-in, because
+    the first frame is also what a feed shows before anything plays.
+
+    It is set at 40% of the height: the middle of the band Instagram leaves
+    clear between its top bar (14%) and its caption stack (the bottom 35%).
+    """
+    lines = lines if isinstance(lines, (list, tuple)) else [lines]
+
+    def draw(d, i, n):
+        f = Brand.head(size)
+        rows = []
+        for ln in lines:
+            rows += wrap(d, ln, f, W - 2 * SAFE)
+        while len(rows) * f.size * 1.1 > H * 0.30 and f.size > 54:
+            f = Brand.head(f.size - 6)
+            rows = []
+            for ln in lines:
+                rows += wrap(d, ln, f, W - 2 * SAFE)
+        block = len(rows) * f.size * 1.1
+        y = H * 0.40 - block / 2
+        # a soft plate behind the words, so they hold on a bright frame
+        d.rectangle([0, y - 70, W, y + block + (150 if sub else 90)], fill=(6, 14, 9))
+        for k, ln in enumerate(rows):
+            p = ease_out(seg(i, FPS * k * 0.04, FPS * 0.16))
+            d.text((SAFE + int((1 - p) * 18), y), ln, font=f, fill=(255, 255, 255))
+            y += f.size * 1.1
+        sp = ease_out(seg(i, FPS * 0.10, FPS * 0.3))
+        d.line([SAFE, y + 22, SAFE + int(220 * max(sp, 0.25)), y + 28],
+               fill=Brand.PITCH_LIT, width=7)
+        if sub:
+            d.text((SAFE, y + 52), sub, font=Brand.body(42), fill=(214, 224, 218))
+    return draw
+
+
 # ----------------------------------------------------------------- build ----
 # Cut rhythm. The reference sits at 1.25s; without a voice the eye needs a
 # fraction longer on each picture, because it is also reading.

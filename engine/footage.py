@@ -22,6 +22,7 @@ from PIL import Image, ImageDraw, ImageEnhance
 from pathlib import Path
 import subprocess, re, shutil
 
+from engine.render import LABEL_Y
 from engine.render import (Scene, Brand, W, H, FPS, SAFE, TOP_SAFE, BOT_SAFE,
                            ease_out, seg, wrap, grain, vignette)
 
@@ -212,12 +213,12 @@ class FootageScene(Scene):
 
         # stock has to say so, on the frame
         if self.source == "stock" and self.label_stock:
-            fl = Brand.body(24)
+            fl = Brand.body(30)
             txt = self.credit or "Library footage · not SoccerTex's floor"
             tw = d.textlength(txt, font=fl)
-            d.rectangle([SAFE - 10, H - BOT_SAFE + 28, SAFE + tw + 10,
-                         H - BOT_SAFE + 62], fill=(0, 0, 0))
-            d.text((SAFE, H - BOT_SAFE + 32), txt, font=fl, fill=(168, 182, 174))
+            d.rectangle([SAFE - 12, LABEL_Y, SAFE + tw + 12, LABEL_Y + 46],
+                        fill=(0, 0, 0))
+            d.text((SAFE, LABEL_Y + 6), txt, font=fl, fill=(214, 224, 218))
 
         return vignette(grain(img, 3, i), .28)
 

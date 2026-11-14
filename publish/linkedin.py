@@ -58,6 +58,9 @@ VERSION = "202610"          # LinkedIn-Version header; month-stamped.
 TIMEOUT = 90
 
 
+STALE_HOURS = 24      # a post later than this is skipped, never sent in a burst
+
+
 class PublishError(RuntimeError):
     def __init__(self, msg, code=None, retryable=False):
         super().__init__(msg)
@@ -204,6 +207,26 @@ def main():
            if i.get("platform") == "linkedin" and i.get("status") == "queued"
            and not i.get("manual")                   # held back for manual posting
            and datetime.fromisoformat(i["publish_at"]).replace(tzinfo=timezone.utc) <= now]
+
+    token = os.environ.get("LI_ACCESS_TOKEN")
+    # Never post a backlog — see the same block in instagram.py. This matters
+    # most here: LinkedIn has been unconnected for weeks with two posts a day
+    # queuing behind it, and without this the first run after approval would
+    # put every one of them on the Company Page in a single minute.
+    stale = [i for i in due
+             if (now - datetime.fromisoformat(i["publish_at"]).replace(
+                 tzinfo=timezone.utc)).total_seconds() > STALE_HOURS * 3600]
+    if stale:
+        due = [i for i in due if i not in stale]
+        why = ("LinkedIn was not connected when this was due." if not token else
+               f"More than {STALE_HOURS} hours late by the time the publisher "
+               f"ran, so it was skipped rather than sent in a burst.")
+        for i in stale:
+            print(f"  MISSED {i['id']} — more than {STALE_HOURS}h late, not sent")
+            if not a.dry_run:
+                i.update(status="missed", missed_reason=why)
+        if not a.dry_run:
+            qp.write_text(json.dumps(q, indent=2, ensure_ascii=False))
 
     if not due:
         print("nothing due"); return 0

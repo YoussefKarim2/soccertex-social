@@ -66,6 +66,9 @@ POLL_MAX = 60          # 5 minutes; Reels encoding is usually well under this
 # GitHub Pages does that for free. This has not changed with Unified Login.
 
 
+STALE_HOURS = 24      # a post later than this is skipped, never sent in a burst
+
+
 class PublishError(RuntimeError):
     def __init__(self, msg, code=None, retryable=False):
         super().__init__(msg)
@@ -282,6 +285,27 @@ def main():
            and not it.get("manual")                  # held back for trending audio
            and datetime.fromisoformat(it["publish_at"]).replace(
                tzinfo=timezone.utc) <= now]
+
+    # NEVER POST A BACKLOG
+    # --------------------
+    # Nothing here used to age out, so anything that sat unpublished — a
+    # scheduler that skipped a day, a queue pushed late — went out all at once
+    # on the next run: three reels in one minute. A post more than a day late
+    # has been overtaken by the next one in its slot, so it is marked missed
+    # and shown as such on the review desk rather than sent.
+    stale = [it for it in due
+             if (now - datetime.fromisoformat(it["publish_at"]).replace(
+                 tzinfo=timezone.utc)).total_seconds() > STALE_HOURS * 3600]
+    if stale:
+        due = [it for it in due if it not in stale]
+        for it in stale:
+            print(f"  MISSED {it['id']} — more than {STALE_HOURS}h late, not sent")
+            if not a.dry_run:
+                it.update(status="missed", missed_reason=(
+                    f"More than {STALE_HOURS} hours late by the time the "
+                    f"publisher ran, so it was skipped rather than sent in a burst."))
+        if not a.dry_run:
+            qp.write_text(json.dumps(q, indent=2, ensure_ascii=False))
 
     if not due:
         print("nothing due"); return 0

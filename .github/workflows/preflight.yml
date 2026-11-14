@@ -11,6 +11,10 @@ on:
   workflow_dispatch:
 jobs:
   preflight:
+    # Not on review-desk commits. Every click on the desk is a commit to
+    # queue.json; running this for each one raced two copies of the job to
+    # push the same report, and the loser showed as a red failure on the desk.
+    if: ${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'Review desk') }}
     runs-on: ubuntu-latest
     permissions: { contents: write }
     steps:
@@ -48,6 +52,10 @@ jobs:
           git add out/desk/preflight.txt
           git diff --staged --quiet || {
             git commit -m "preflight: $(date -u +%Y-%m-%dT%H:%MZ)"
-            git pull --rebase --autostash -q || true
-            git push
+            for i in 1 2 3; do
+              git push && exit 0
+              git pull --rebase --autostash -q origin main || true
+            done
+            echo "could not record the report after 3 tries" >&2
+            exit 1
           }

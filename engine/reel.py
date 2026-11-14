@@ -26,6 +26,7 @@ these clips are not SoccerTex's floor and the video says so.
 """
 from __future__ import annotations
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
+from engine.render import LABEL_Y
 from engine.render import (W, H, FPS, SAFE, TOP_SAFE, BOT_SAFE, Brand,
                            ease_out, seg, wrap, grain, vignette, Video)
 from engine.footage import FootageScene
@@ -143,12 +144,12 @@ class Shot(FootageScene):
             self.overlay(d, i, n)
 
         if self.source == "stock" and self.label_stock:
-            f = Brand.body(23)
+            f = Brand.body(30)
             txt = self.credit or "Library footage · not SoccerTex's floor"
             tw = d.textlength(txt, font=f)
-            d.rectangle([SAFE - 9, H - BOT_SAFE + 30, SAFE + tw + 9, H - BOT_SAFE + 62],
+            d.rectangle([SAFE - 12, LABEL_Y, SAFE + tw + 12, LABEL_Y + 46],
                         fill=(0, 0, 0))
-            d.text((SAFE, H - BOT_SAFE + 33), txt, font=f, fill=(150, 166, 158))
+            d.text((SAFE, LABEL_Y + 6), txt, font=f, fill=(214, 224, 218))
 
         return vignette(grain(img, 2, i), 0.30)
 

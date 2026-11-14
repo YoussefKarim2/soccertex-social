@@ -142,47 +142,94 @@ def slot_shape(items) -> dict:
     return shape
 
 
+# Topic rotation is counted from a fixed day, not from wherever a build happens
+# to start. Counting from the build's first day meant every roll-forward
+# restarted the rotation at topic 0, so the seam between two builds repeated
+# topics that had just aired. 15 Nov 2026 is day 0 of the four-slot schedule,
+# so this reproduces the queue already live.
+EPOCH = datetime(2026, 11, 15, tzinfo=timezone.utc).toordinal()
+
+KEEP = ("published", "failed", "vetoed", "missed")      # history: never touched
+# What the review desk can set on a waiting post. A rebuild must not undo it.
+DESK_FIELDS = ("manual", "review_note", "caption_edited", "caption_original")
+
+
+def _now() -> datetime:
+    """The clock, overridable so a roll-forward can be tested ahead of time."""
+    import os
+    fake = os.environ.get("QUEUE_NOW")
+    return datetime.fromisoformat(fake) if fake else datetime.now(timezone.utc)
+
+
 def build(restart: bool = False) -> dict:
     prior = {}
     if QUEUE.exists():
         old = json.loads(QUEUE.read_text())
         prior = {i["id"]: i for i in old.get("items", [])}
 
-    # CHANGING THE SLOT TABLE WITHOUT --restart IS A MONTH OF SILENCE
-    # ---------------------------------------------------------------
-    # start_day() resumes the day after the last *queued* post, which is
-    # correct when the schedule is unchanged and the horizon is just rolling
-    # forward. But a rebuild discards queued items and regenerates them, so
-    # when SLOTS has changed the regenerated days land after the old horizon —
-    # a month out — and everything between now and then is simply gone. The
-    # first run of the four-slot schedule did exactly that: 5 published posts
-    # preserved, 120 new ones starting 11 December, and nothing at all for the
-    # four weeks in between. It looked like a clean build.
+    # CHANGING THE SLOT TABLE WITHOUT --restart IS REFUSED
+    # ----------------------------------------------------
+    # Posts already waiting keep their slots (see below), so a new slot table
+    # only takes effect after the last of them — a month out. That is never
+    # what a slot change means, so say so instead of building it.
     was = slot_shape(prior.values())
     if was and was != POSTS_PER_DAY and not restart:
         raise SystemExit(
             f"the slot table changed: queue has {was}, SLOTS now says "
             f"{POSTS_PER_DAY}.\n"
-            f"Rebuilding without --restart would regenerate the new schedule "
-            f"after the old horizon and leave a gap with nothing queued.\n"
+            f"Without --restart the new slots would only begin after the "
+            f"posts already waiting, a month from now.\n"
             f"Run:  python3 engine/queue_build.py --restart")
 
-    # keep everything already acted on, untouched
-    items = [i for i in prior.values() if i.get("status") in ("published", "failed", "vetoed")]
-    done_ids = {i["id"] for i in items}
+    now = _now()
+    tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
 
-    day0 = start_day(list(prior.values()), restart=restart)
+    # history stays, untouched
+    items = [i for i in prior.values() if i.get("status") in KEEP]
 
-    for d in range(HORIZON_DAYS):
-        date = day0 + timedelta(days=d)
+    # A POST THAT IS WAITING STAYS WAITING
+    # ------------------------------------
+    # This used to keep only history and regenerate everything else starting
+    # the day after the last queued post — which silently dropped every post
+    # still waiting and left a month with nothing in it. It was the rule, not
+    # an edge case: any plain rebuild did it. A waiting post is now carried
+    # across exactly as it is, and the build only adds days on the end.
+    # --restart still clears what is waiting and starts again from tomorrow,
+    # but keeps whatever was decided on the review desk for a post that lands
+    # on the same slot.
+    if not restart:
+        for i in prior.values():
+            if i.get("status") not in ("queued", "blocked"):
+                continue
+            video = ROOT / "out" / i["video"]
+            if i["status"] == "blocked" and video.exists():
+                i = dict(i, status="queued"); i.pop("missing_video", None)
+                cov = make_cover(video)
+                if cov:
+                    i["cover"] = f"video/{cov.name}"
+            items.append(i)
+    have = {i["id"] for i in items}
+
+    waiting = [datetime.fromisoformat(i["publish_at"]) for i in items
+               if i.get("status") in ("queued", "blocked")]
+    last = max(waiting) if waiting else None
+    if last is not None and last.tzinfo is None:
+        last = last.replace(tzinfo=timezone.utc)
+    day0 = tomorrow
+    if last is not None and last >= tomorrow:
+        day0 = (last + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    end = tomorrow + timedelta(days=HORIZON_DAYS)
+
+    date = day0
+    while date < end:
         for plat, hhmm, offset in SLOTS:
-            topic = BANK[(d + offset) % N]
+            topic = BANK[(date.toordinal() - EPOCH + offset) % N]
             variant = variant_for(plat)
-            # The time is part of the id now. Two Instagram posts on the same
-            # day would otherwise collide whenever the offsets wrapped onto
-            # the same topic, and one of them would silently vanish.
+            # The time is part of the id. Two Instagram posts on the same day
+            # would otherwise collide whenever the offsets wrapped onto the
+            # same topic, and one of them would silently vanish.
             iid = f"{topic['id']}--{plat}--{date:%Y%m%d}-{hhmm.replace(':', '')}"
-            if iid in done_ids:
+            if iid in have:
                 continue
             h, m = map(int, hhmm.split(":"))
             when = date.replace(hour=h, minute=m)
@@ -207,17 +254,26 @@ def build(restart: bool = False) -> dict:
                 item["missing_video"] = True
 
             # Auto-publish with veto: everything is "queued" and goes out on
-            # time unless it is vetoed before then. VETO_HOURS is how long it
-            # sits visible in the dashboard first.
+            # time unless it is stopped on the review desk before then.
             item["status"] = "queued" if video.exists() else "blocked"
             item["veto_until"] = (when - timedelta(hours=VETO_HOURS)).isoformat()
             if plat == "linkedin":
                 item["note"] = LINKEDIN_NOTE
+
+            # the desk's decisions survive a --restart for the same slot
+            was_item = prior.get(iid)
+            if was_item and was_item.get("status") in ("queued", "blocked"):
+                for k in DESK_FIELDS:
+                    if k in was_item:
+                        item[k] = was_item[k]
+                if was_item.get("caption_edited"):
+                    item["caption"] = was_item["caption"]
             items.append(item)
+        date += timedelta(days=1)
 
     items.sort(key=lambda i: (i["publish_at"], i["platform"]))
     return {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": now.isoformat(),
         "cadence": ("two Instagram reels (12:30, 17:30 UTC) and two LinkedIn "
                     "posts (11:30, 15:30 UTC) a day; auto-publish with a 24h "
                     "veto window"),
