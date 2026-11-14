@@ -39,8 +39,14 @@ N = len(BANK)
 #   12:30 UTC = 07:30 New York, 13:30 London, 14:30 Berlin — US morning.
 #   15:30 UTC = 10:30 New York, 15:30 London, 16:30 Berlin — US late morning,
 #               the European afternoon.
-#   17:00 UTC = 12:00 New York, 17:00 London, 18:00 Berlin — US midday,
+#   17:30 UTC = 12:30 New York, 17:30 London, 18:30 Berlin — US midday,
 #               European commute.
+#
+# All four sit on the half hour deliberately. GitHub's scheduler delivers this
+# repository about four runs a DAY whatever the cron says — measured gaps of
+# 234 to 493 minutes against a cron offering 144 chances — so the real trigger
+# is an external one firing at :32, two minutes after each slot. Four slots on
+# the same minute is what lets a single cron expression cover all of them.
 #
 # The offsets do two jobs. They keep all four slots on different topics on any
 # given day, and they space each platform's two airings of a topic as far apart
@@ -56,7 +62,7 @@ SLOTS = [
     ("linkedin",  "11:30", 0),
     ("instagram", "12:30", N // 4),
     ("linkedin",  "15:30", N // 2),
-    ("instagram", "17:00", N // 4 + N // 2),
+    ("instagram", "17:30", N // 4 + N // 2),
 ]
 
 # CONTENT SUPPLY
@@ -212,7 +218,7 @@ def build(restart: bool = False) -> dict:
     items.sort(key=lambda i: (i["publish_at"], i["platform"]))
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "cadence": ("two Instagram reels (12:30, 17:00 UTC) and two LinkedIn "
+        "cadence": ("two Instagram reels (12:30, 17:30 UTC) and two LinkedIn "
                     "posts (11:30, 15:30 UTC) a day; auto-publish with a 24h "
                     "veto window"),
         "topics_in_bank": N,
