@@ -25,6 +25,21 @@
       }
     },
     {
+      "id": "lead-time--linkedin--20261111-1130",
+      "topic": "lead-time",
+      "platform": "linkedin",
+      "variant": "business",
+      "kind": "video",
+      "publish_at": "2026-11-11T11:30:00+00:00",
+      "caption": "A kit programme that ships in 2 weeks of production instead of 10 changes your whole season calendar.\n\nAt 2 weeks you approve in April for a July delivery. At 14 weeks end to end, the same deadline means approving in January — committing to next season's kit before this season has finished.\n\nThe real cost of a long lead time isn't the waiting. It's deciding early, with worse information, and having no way to react when a club adds 200 pieces in May.\n\nWhat's your drop-dead approval date?\n\n#sourcing #manufacturing",
+      "video": "video/lead-time--business.mp4",
+      "pillar": "3 Sourcing Math",
+      "cover": "video/lead-time--business.cover.jpg",
+      "status": "queued",
+      "veto_until": "2026-11-10T11:30:00+00:00",
+      "note": "Publishes to your personal LinkedIn profile via the self-serve Share on LinkedIn product (w_member_social) — no app review needed. Company Page posting would require the Community Management API, which is a weeks-long approval with terminal rejection risk."
+    },
+    {
       "id": "small-orders--instagram--20261111-1230",
       "topic": "small-orders",
       "platform": "instagram",
@@ -65,6 +80,21 @@
         "verified": true,
         "late_minutes": 273
       }
+    },
+    {
+      "id": "season-calendar--linkedin--20261112-1130",
+      "topic": "season-calendar",
+      "platform": "linkedin",
+      "variant": "business",
+      "kind": "video",
+      "publish_at": "2026-11-12T11:30:00+00:00",
+      "caption": "If your kit has to be in clubs' hands for July pre-season, when is the last safe date to approve your sample?\n\nMost brands answer March. Counted backwards honestly it's the first half of April — and that's on a 2-week production window. On a 10-week lead time the same deadline moves to January.\n\nThat's the actual argument for a shorter lead time. Not that kit arrives sooner. That you decide later, with better information.\n\n#sourcing #teamwear",
+      "video": "video/season-calendar--business.mp4",
+      "pillar": "3 Sourcing Math",
+      "cover": "video/season-calendar--business.cover.jpg",
+      "status": "queued",
+      "veto_until": "2026-11-11T11:30:00+00:00",
+      "note": "Publishes to your personal LinkedIn profile via the self-serve Share on LinkedIn product (w_member_social) — no app review needed. Company Page posting would require the Community Management API, which is a weeks-long approval with terminal rejection risk."
     },
     {
       "id": "trading-company--instagram--20261112-1230",
@@ -109,6 +139,21 @@
       }
     },
     {
+      "id": "price-drivers--linkedin--20261113-1130",
+      "topic": "price-drivers",
+      "platform": "linkedin",
+      "variant": "business",
+      "kind": "video",
+      "publish_at": "2026-11-13T11:30:00+00:00",
+      "caption": "Six things move the unit price of a custom jersey. Quantity is only one, and it's rarely the biggest lever you have.\n\nIf a quote comes back higher than you budgeted, the fastest fix is usually consolidating colourways or dropping a panel — not adding units you can't sell.\n\nI'd rather you knew that before asking us for a number.\n\n#sourcing #pricing",
+      "video": "video/price-drivers--business.mp4",
+      "pillar": "3 Sourcing Math",
+      "cover": "video/price-drivers--business.cover.jpg",
+      "status": "queued",
+      "veto_until": "2026-11-12T11:30:00+00:00",
+      "note": "Publishes to your personal LinkedIn profile via the self-serve Share on LinkedIn product (w_member_social) — no app review needed. Company Page posting would require the Community Management API, which is a weeks-long approval with terminal rejection risk."
+    },
+    {
       "id": "buyer-questions--instagram--20261113-1230",
       "topic": "buyer-questions",
       "platform": "instagram",
@@ -149,6 +194,56 @@
         "verified": true,
         "late_minutes": 102
       }
+    },
+    {
+      "id": "europe-duty--linkedin--20261114-1130",
+      "topic": "europe-duty",
+      "platform": "linkedin",
+      "variant": "business",
+      "kind": "video",
+      "publish_at": "2026-11-14T11:30:00+00:00",
+      "caption": "Egyptian garment exports to Europe grew 46% in the first seven months of 2026, to $930m. Spain alone was up 86%.\n\nThere's a structural reason most brands sourcing in Asia don't know about.\n\n1. The EU–Egypt Association Agreement has been in force since June 2004. Egyptian industrial goods — garments included — enter the EU without duty.\n2. Egypt is in the pan-Euro-Mediterranean origin zone, so Turkish or European fabric can still count towards Egyptian origin.\n\nIf your fabric spec is European and you assumed that forced you into European manufacturing prices, it doesn't.\n\nFigures: Egypt's Ready-Made Garments Export Council, September 2026. Confirm your own HS code with your customs broker — origin rules changed in 2025 and I'd rather you checked.\n\n#sourcing #nearshoring",
+      "video": "video/europe-duty--business.mp4",
+      "pillar": "3 Sourcing Math",
+      "cover": "video/europe-duty--business.cover.jpg",
+      "status": "queued",
+      "veto_until": "2026-11-13T11:30:00+00:00",
+      "note": "Publishes to your personal LinkedIn profile via the self-serve Share on LinkedIn product (w_member_social) — no app review needed. Company Page posting would require the Community Management API, which is a weeks-long approval with terminal rejection risk."
+    },
+    {
+      "id": "decoration--instagram--20261114-1230",
+      "topic": "decoration",
+      "platform": "instagram",
+      "variant": "social",
+      "kind": "reel",
+      "publish_at": "2026-11-14T12:30:00+00:00",
+      "caption": "Four ways to decorate a kit, and the honest trade-offs.\n\nSUBLIMATION — ink becomes part of the fabric. Zero hand-feel, nothing to peel, unlimited colour. Polyester only, and it can't print white onto dark.\n\nEMBROIDERY — thread stitched in. The most premium feel, best for crests. Adds weight and cost.\n\nHEAT TRANSFER — applied film. 3D, reflective, fluor, matt and silicone. Works on any fabric; application is everything.\n\nSCREEN PRINT — ink on the surface. Cheapest at volume, one screen per colour.\n\nThe real answer is usually a mix. All four run in our building, so a garment using three of them doesn't leave and doesn't add a week.\n\n#sublimation #embroidery #teamwear #footballkit #customkits #cutandsew",
+      "video": "video/decoration--social.mp4",
+      "pillar": "2 Kit School",
+      "cover": "video/decoration--social.cover.jpg",
+      "status": "published",
+      "veto_until": "2026-11-13T12:30:00+00:00",
+      "result": {
+        "media_id": "18215086009368240",
+        "permalink": "https://www.instagram.com/reel/DfursODSIIP/",
+        "published_at": "2026-11-14T16:55:13+0000",
+        "verified": true,
+        "late_minutes": 265
+      }
+    },
+    {
+      "id": "nameset--instagram--20261114-1700",
+      "topic": "nameset",
+      "platform": "instagram",
+      "variant": "social",
+      "kind": "reel",
+      "publish_at": "2026-11-14T17:00:00+00:00",
+      "caption": "Names and numbers are where kit becomes a specific player's shirt, and where most complaints come from. Film that lifts at the corner after a season. Numbers that crack. Letters that bleed.\n\nIt comes down to four variables: the film, the temperature, the dwell time and the pressure. Get one wrong and it shows up three months later.\n\nWe run 3D, reflective, fluor, matt and silicone. The choice is usually about hand-feel and how far away it needs to read.\n\n#teamwear #footballkit #heattransfer #customkits #nameset #apparelmanufacturing",
+      "video": "video/nameset--social.mp4",
+      "pillar": "4 Built for Clubs",
+      "cover": "video/nameset--social.cover.jpg",
+      "status": "queued",
+      "veto_until": "2026-11-13T17:00:00+00:00"
     },
     {
       "id": "lead-time--linkedin--20261115-1130",
