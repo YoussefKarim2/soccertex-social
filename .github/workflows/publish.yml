@@ -1,21 +1,27 @@
 name: Publish due posts
 on:
   schedule:
-    # Every 10 minutes, on minutes nobody else picks.
+    # ASKING FOR FEWER RUNS, NOT MORE.
     #
-    # GitHub's scheduler is best-effort and drops runs. Measured on this repo:
-    # an hourly cron produced 3 runs in 28 hours, roughly one every 8 hours,
-    # which is why the 16:00 post on 10 Nov never had a run to go out in. The
-    # publisher already picks up anything overdue, so the fix is more chances
-    # — and chances at times the scheduler is not busiest. :00, :15, :30 and
-    # :45 are where almost every cron in the world lands, so these are offset
-    # by 4 minutes. Each run is a few seconds and Actions minutes are free on
-    # a public repository.
+    # Measured over seven days, GitHub delivered this workflow 1, 2, 4, 4, 4
+    # and 3 scheduled runs a day — against a cron offering 144. That is not
+    # jitter around a schedule, it is a per-workflow quota of roughly four
+    # runs a day that GitHub hands out whenever it feels like it. Going from
+    # hourly to every ten minutes changed nothing, because frequency is not
+    # what is being honoured.
     #
-    # This reduces lateness; it cannot eliminate it. Each published item now
-    # records late_minutes, and preflight reports the median and the worst, so
-    # whether this is good enough is a measurement rather than a hope.
-    - cron: "4,14,24,34,44,54 * * * *"
+    # So stop asking for 144. These nine are the four publish slots at :32,
+    # each slot's one-hour catch-up, and two overnight sweeps. If GitHub is
+    # going to deliver about four of what we ask for, far better that they are
+    # drawn from nine requests clustered on the slots than from 144 scattered
+    # across the day — the delivered runs then land near a slot instead of at
+    # 03:48.
+    #
+    # Every published item records late_minutes and preflight reports the
+    # median and worst, so this is a measurement, not a hope. If the next few
+    # days do not improve on a 273-minute median, the cron is not the lever
+    # and the trigger has to come from outside GitHub entirely.
+    - cron: "32 3,11,12,13,15,16,17,18,21 * * *"
   workflow_dispatch:
     inputs:
       dry_run: { description: "Resolve only, publish nothing", type: boolean, default: true }
