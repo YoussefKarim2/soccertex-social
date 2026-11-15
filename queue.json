@@ -209,9 +209,10 @@
       "video": "video/europe-duty--business.mp4",
       "pillar": "3 Sourcing Math",
       "cover": "video/europe-duty--business.cover.jpg",
-      "status": "queued",
+      "status": "missed",
       "veto_until": "2026-11-13T11:30:00+00:00",
-      "note": "Publishes to your personal LinkedIn profile via the self-serve Share on LinkedIn product (w_member_social) — no app review needed. Company Page posting would require the Community Management API, which is a weeks-long approval with terminal rejection risk."
+      "note": "Publishes to your personal LinkedIn profile via the self-serve Share on LinkedIn product (w_member_social) — no app review needed. Company Page posting would require the Community Management API, which is a weeks-long approval with terminal rejection risk.",
+      "missed_reason": "LinkedIn was not connected when this was due."
     },
     {
       "id": "decoration--instagram--20261114-1230",
@@ -281,8 +282,15 @@
       "video": "video/small-orders--social.mp4",
       "pillar": "3 Sourcing Math",
       "cover": "video/small-orders--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-14T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-14T12:30:00+00:00",
+      "result": {
+        "media_id": "18139045549647193",
+        "permalink": "https://www.instagram.com/reel/DfxXUITimfz/",
+        "published_at": "2026-11-15T17:54:57+0000",
+        "verified": true,
+        "late_minutes": 324
+      }
     },
     {
       "id": "sublimation-limits--linkedin--20261115-1530",
@@ -310,8 +318,15 @@
       "video": "video/sewing-line--social.mp4",
       "pillar": "1 Inside the Floor",
       "cover": "video/sewing-line--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-14T17:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-14T17:30:00+00:00",
+      "result": {
+        "media_id": "18084444767345764",
+        "permalink": "https://www.instagram.com/reel/DfxXZZYNfjV/",
+        "published_at": "2026-11-15T17:55:34+0000",
+        "verified": true,
+        "late_minutes": 24
+      }
     },
     {
       "id": "season-calendar--linkedin--20261116-1130",
