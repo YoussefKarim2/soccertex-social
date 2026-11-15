@@ -94,23 +94,35 @@ def text_block(draw, xy, lines, font, fill, lh=1.18, align="left", max_w=None):
 
 def grain(img, amount=5, seed=0):
     """A little noise so flat colour doesn't band on compression."""
-    rnd = random.Random(seed)
-    px = img.load()
-    for _ in range(int(W * H * 0.0035)):
-        x, y = rnd.randrange(W), rnd.randrange(H)
-        r, g, b = px[x, y]
-        d = rnd.randint(-amount, amount)
-        px[x, y] = (max(0, min(255, r + d)), max(0, min(255, g + d)), max(0, min(255, b + d)))
-    return img
+    try:
+        import numpy as np
+    except ImportError:                                  # the slow way, pixel by pixel
+        rnd = random.Random(seed)
+        px = img.load()
+        for _ in range(int(W * H * 0.0035)):
+            x, y = rnd.randrange(W), rnd.randrange(H)
+            r, g, b = px[x, y]
+            d = rnd.randint(-amount, amount)
+            px[x, y] = (max(0, min(255, r + d)), max(0, min(255, g + d)), max(0, min(255, b + d)))
+        return img
+    rng = np.random.default_rng(seed)
+    k = int(W * H * 0.0035)
+    a = np.asarray(img, dtype=np.int16).copy()
+    ys, xs = rng.integers(0, H, k), rng.integers(0, W, k)
+    a[ys, xs] += rng.integers(-amount, amount + 1, k)[:, None].astype(np.int16)
+    return Image.fromarray(np.clip(a, 0, 255).astype(np.uint8), "RGB")
+
+
+_VIGNETTE = {}
 
 
 def vignette(img, strength=0.45):
-    v = Image.new("L", (W, H), 0)
-    d = ImageDraw.Draw(v)
-    d.ellipse([-W * 0.35, -H * 0.12, W * 1.35, H * 1.12], fill=255)
-    v = v.filter(ImageFilter.GaussianBlur(W * 0.16))
-    black = Image.new("RGB", (W, H), (0, 0, 0))
-    return Image.composite(img, Image.blend(img, black, strength), v)
+    if "mask" not in _VIGNETTE:                          # the same soft oval every frame
+        v = Image.new("L", (W, H), 0)
+        ImageDraw.Draw(v).ellipse([-W * 0.35, -H * 0.12, W * 1.35, H * 1.12], fill=255)
+        _VIGNETTE["mask"] = v.filter(ImageFilter.GaussianBlur(W * 0.16))
+        _VIGNETTE["black"] = Image.new("RGB", (W, H), (0, 0, 0))
+    return Image.composite(img, Image.blend(img, _VIGNETTE["black"], strength), _VIGNETTE["mask"])
 
 
 def logo_bug(d, opacity=140):

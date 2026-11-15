@@ -23,17 +23,25 @@ can be moved back to one by giving it a spec here.
 day, or consecutive days), and no two reels in the whole library with the
 same look.
 
+15 Nov, night: "i like the videos vibe ... but i want more real life videos of
+factory videos, such as cutting, stitching." So the look stays and real footage
+is cut into it — eighteen library clips of cutting, sewing, embroidery,
+printing, pressing and mills. A reel opens on one, and lines about a process
+play over that process. It is library footage, stamped as such on every frame,
+and never carries SoccerTex's own voice; `check_footage()` keeps two reels that
+post back to back from opening on the same clip.
+
 Every line on screen comes from engine/bank.py — reworded and cut down, never
 added to.
 """
 from __future__ import annotations
-import subprocess, sys
+import subprocess, sys, zlib
 from pathlib import Path
 
 from engine.render import Video
 from engine.bank import BANK
 from engine import vibes as V
-from engine.vibes import Poster, VersusScene, BlueprintScene, CloseCard
+from engine.vibes import Poster, VersusScene, BlueprintScene, CloseCard, Plate, Breaks, clip
 from build_silent import CLOSE
 
 ROOT = Path(__file__).resolve().parent
@@ -103,23 +111,48 @@ def check_spread():
         seen[key] = tid
 
 
+def opening_clip(tid):
+    """The library clip a reel opens on, or None if it opens on a drawn card."""
+    v, _ = build(tid, "social")
+    first = v.scenes[0]
+    shot = (first if isinstance(first, Plate)
+            else first.shots.get(-1) if isinstance(first, BlueprintScene)
+            else first.inner.hookshot if isinstance(first, Breaks) else None)
+    for s in v.scenes:
+        s.close()
+    return shot.path.stem if shot else None
+
+
+def check_footage():
+    """Two reels a viewer sees back to back must not open on the same clip."""
+    ids = [t["id"] for t in BANK]
+    first = {tid: opening_clip(tid) for tid in ids}
+    n = len(ids)
+    for i, tid in enumerate(ids):
+        for other in (ids[(i + 1) % n], ids[(i + n // 2) % n]):
+            if first[tid] and first[tid] == first[other]:
+                sys.exit(f"{tid} and {other} post back to back and both open on {first[tid]}")
+    return first
+
+
 # ─────────────────────────────────────────────────────────────── poster ─────
 def poster(tid, P):
-    s, y, c = P.slam, P.say, P.count
+    s, y, c, fs, fy = P.slam, P.say, P.count, P.fslam, P.fsay
     if tid == "europe-duty":
-        return [s(["EGYPT", "SHIPS TO", "EUROPE", "DUTY-FREE"], "Since 2004. Most brands don't know it.", hi=3, scheme=0),
+        return [fs(clip("sewing-machine-vertical", 4), ["EGYPT", "SHIPS TO", "EUROPE", "DUTY-FREE"],
+                   "Since 2004. Most brands don't know it.", hi=3, scheme=0),
                 c(46, "%", "Growth in Egyptian garment exports to Europe", "First seven months of 2026. Spain alone was up 86%."),
                 s(["SINCE", "JUNE 2004"], "EU–Egypt Association Agreement, in force.", scheme=1),
                 s(["NO DUTY"], "Egyptian industrial goods enter the EU without duty.", scheme=0),
-                y("PEM origin rules let EU or Turkish fabric still count as Egyptian.", scheme=1),
+                fy(clip("fabric-production-overhead", 2), "PEM origin rules let EU or Turkish fabric still count as Egyptian.", scheme=1),
                 s(["3 TO 7", "DAYS"], "By sea to Southern European ports.", hi=0, scheme=0)]
     if tid == "season-calendar":
-        return [s(["WORK", "BACKWARDS", "FROM JULY"], "Most brands get this date wrong by two months.", hi=2),
+        return [fs(clip("sewing-factory", 1), ["WORK", "BACKWARDS", "FROM JULY"], "Most brands get this date wrong by two months.", hi=2),
                 s(["1 JULY"], "Kit with clubs."),
                 s(["MINUS", "1–2 WEEKS"], "Your own distribution and namesets."),
                 s(["MINUS", "1 WEEK"], "Sea transit to Southern Europe."),
-                s(["MINUS", "2 WEEKS"], "Bulk production."),
-                s(["MINUS", "1–2 WEEKS"], "Sample approval."),
+                fs(clip("sewing-floor", 3), ["MINUS", "2 WEEKS"], "Bulk production."),
+                fs(clip("fabric-check", 5), ["MINUS", "1–2 WEEKS"], "Sample approval."),
                 s(["MINUS", "1–2 WEEKS"], "Tech pack and lab dips."),
                 y("Approve your sample by the first half of April.")]
     if tid == "tech-pack":
@@ -131,14 +164,16 @@ def poster(tid, P):
                  "Decoration — what goes where, at what size.",
                  "Trims and labels.",
                  "The real deadline, not the one you'd like."]
+        over = {1: clip("pressing", 6), 2: clip("thread-spools", 2), 5: clip("sewing-machine-working", 3),
+                6: clip("sewing-threading", 1)}
         return ([s(["EIGHT THINGS", "AND WE CAN", "QUOTE YOU"], "Five of them you already know.", hi=0)]
-                + [y(t, n=k + 1) for k, t in enumerate(items)]
+                + [fy(over[k], t, n=k + 1) if k in over else y(t, n=k + 1) for k, t in enumerate(items)]
                 + [y("Enough to quote a price we'll stand behind.")])
     if tid == "small-orders":
-        return [s(["THEY STOPPED", "REPLYING"], "About your 300 pieces.", hi=1),
+        return [fs(clip("embroidery-line", 0), ["THEY STOPPED", "REPLYING"], "About your 300 pieces.", hi=1),
                 s(["IT WASN'T", "YOUR BRAND."]), s(["IT WAS", "THE MATHS."], hi=1),
-                y("Big factories need big runs — setup costs them more than you pay."),
-                y("A colourway is a fabric lot, a lab dip and a cut, whatever the quantity."),
+                fy(clip("fabric-production-overhead", 8), "Big factories need big runs — setup costs them more than you pay."),
+                fy(clip("cutting-knife", 2), "A colourway is a fabric lot, a lab dip and a cut, whatever the quantity."),
                 y("Short custom runs are a different cost structure, not a favour."),
                 s(["SEND YOUR", "REAL", "QUANTITY"], "We'll tell you straight.")]
     if tid == "buyer-questions":
@@ -147,59 +182,65 @@ def poster(tid, P):
               "What's your MOQ per colourway, not per style?",
               "What certifications do you hold, and when were you last audited?",
               "What was the last order you got wrong, and what happened next?"]
-        return ([s(["WHAT I'D ASK", "IF I WERE", "BUYING"], "Including the two I'd least like to be asked.", hi=2)]
-                + [y(q, n=k + 1) for k, q in enumerate(qs)]
+        over = {0: clip("sewing-factory", 6), 2: clip("thread-spools", 6)}
+        return ([fs(clip("sewing-threading", 4), ["WHAT I'D ASK", "IF I WERE", "BUYING"],
+                    "Including the two I'd least like to be asked.", hi=2)]
+                + [fy(over[k], q, n=k + 1) if k in over else y(q, n=k + 1) for k, q in enumerate(qs)]
                 + [s(["TWO OF THEM", "ARE", "UNCOMFORTABLE."], "Ask anyway.")])
     if tid == "gsm":
-        return [s(["THE ONE", "FABRIC NUMBER", "NOBODY", "EXPLAINS"], "And it's on every quote you'll ever read.", hi=1),
-                y("GSM is grams per square metre. It's just fabric weight."),
+        return [fs(clip("fabric-production-overhead", 12), ["THE ONE", "FABRIC NUMBER", "NOBODY", "EXPLAINS"],
+                   "And it's on every quote you'll ever read.", hi=1),
+                fy(clip("pressing", 6), "GSM is grams per square metre. It's just fabric weight."),
                 s(["130–150"], "GSM — match jersey."), s(["150–180"], "GSM — training top."),
                 s(["180–220"], "GSM — polo, warm-up."), s(["240–320"], "GSM — hoodie, sweat."),
                 c(150, " GSM", "Where a match jersey tops out", "Above this you're buying a training top."),
-                y("Lighter isn't cheaper by accident. It's less of it.")]
+                fy(clip("mill-process", 3), "Lighter isn't cheaper by accident. It's less of it.")]
     if tid == "cheap-vs-good":
-        return [s(["A £15 JERSEY", "AND A", "£45 JERSEY"], "Same photo. Different garment.", hi=2),
+        return [fs(clip("cutting-fabric-scissors", 0), ["A £15 JERSEY", "AND A", "£45 JERSEY"], "Same photo. Different garment.", hi=2),
                 s(["WHAT YOU", "CAN'T SEE"], "Three things that never show in a product shot."),
-                y("£15: lighter fabric, less yarn. £45: the correct GSM for the job.", n=1),
-                y("£15: overlocked seams that rub. £45: flatlocked seams, no ridge.", n=2),
+                fy(clip("mill-worker", 2), "£15: lighter fabric, less yarn. £45: the correct GSM for the job.", n=1),
+                fy(clip("sewing-closeup", 1), "£15: overlocked seams that rub. £45: flatlocked seams, no ridge.", n=2),
                 y("£15: a printed vinyl badge that peels. £45: a sublimated or stitched badge.", n=3)]
     if tid == "sublimation-limits":
-        return [s(["SUBLIMATION", "CANNOT", "PRINT ON", "COTTON"], "Anyone saying otherwise is about to disappoint you.", hi=3),
+        return [fs(clip("wide-printer", 5), ["SUBLIMATION", "CANNOT", "PRINT ON", "COTTON"],
+                   "Anyone saying otherwise is about to disappoint you.", hi=3),
                 y("Sublimation needs polyester. On cotton there's nothing for the ink to bond to."),
-                s(["SCREEN", "PRINT"], "The standard answer for cotton."),
-                s(["EMBROIDERY"], "Works on anything, best for small marks."),
+                fs(clip("screen-printing", 3), ["SCREEN", "PRINT"], "The standard answer for cotton."),
+                fs(clip("embroidery-line", 4), ["EMBROIDERY"], "Works on anything, best for small marks."),
                 s(["HEAT", "TRANSFER"], "Works on cotton, application is everything."),
                 y("Or change the fabric: a poly-cotton blend takes it, softer and more muted.")]
     if tid == "recovery-test":
-        return [s(["STRETCH", "ISN'T", "THE TEST."]),
+        return [fs(clip("pressing", 9), ["STRETCH", "ISN'T", "THE TEST."]),
                 s(["RECOVERY", "IS."], "Two seconds, and it tells you more than the label.", hi=0, scheme=0),
-                y("Stretch is how far the fabric goes. Recovery is whether it comes back."),
+                fy(clip("mill-process", 7), "Stretch is how far the fabric goes. Recovery is whether it comes back."),
                 s(["PULL", "THE CUFF."], "Then let go and watch."),
                 y("Instant return means good recovery."),
                 y("Stays slightly open? That's the shirt that looks tired by March.")]
     if tid == "cutting":
-        return [s(["SIXTY", "LAYERS,", "ONE PASS"], "Everything after this depends on getting it right.", hi=2),
-                y("Fabric spread in layers, pattern laid out as a marker.", n=1),
-                y("Get the marker wrong and you waste fabric on every garment.", n=2),
+        return [fs(clip("cutting-machine", 0), ["SIXTY", "LAYERS,", "ONE PASS"], "Everything after this depends on getting it right.", hi=2),
+                fy(clip("cutting-knife", 5), "Fabric spread in layers, pattern laid out as a marker.", n=1),
+                fy(clip("cutting-fabric-scissors", 1), "Get the marker wrong and you waste fabric on every garment.", n=2),
                 y("The cut is inspected before anything moves to the line.", n=3),
                 y("Piece count checked against the marker.", n=4),
                 s(["STACKED.", "IDENTICAL."], "That is how the pieces come off.")]
     if tid == "embroidery":
-        return [s(["FIFTEEN", "THOUSAND", "STITCHES,", "ONE CREST"], "You can feel it. That's the point.", hi=3),
-                y("Multiple needles, one colour each, swapping as the design builds."),
-                s(["ON TOP,", "NOT INSIDE"], "Thread sits on the surface — the premium feel, and the added weight."),
+        return [fs(clip("sewing-machine-working", 0), ["FIFTEEN", "THOUSAND", "STITCHES,", "ONE CREST"], "You can feel it. That's the point.", hi=3),
+                fy(clip("embroidery-line", 2), "Multiple needles, one colour each, swapping as the design builds."),
+                fs(clip("sewing-machine-working", 9, tight=1.15, focus=(.5, .7)), ["ON TOP,", "NOT INSIDE"],
+                   "Thread sits on the surface — the premium feel, and the added weight."),
                 s(["CRESTS.", "SPONSOR", "MARKS."], "What it is best for."),
                 y("Not for full-garment graphics. That's sublimation.")]
     if tid == "nameset":
-        return [s(["NAMES AND", "NUMBERS ARE", "WHERE KIT", "GOES WRONG"], "Four variables, and one wrong shows up in March.", hi=3),
+        return [fs(clip("fabric-check", 0), ["NAMES AND", "NUMBERS ARE", "WHERE KIT", "GOES WRONG"],
+                   "Four variables, and one wrong shows up in March.", hi=3),
                 s(["FILM", "TYPE"], "Decides hand-feel and how far it reads."),
                 s(["TEMPERATURE", "AND DWELL", "TIME"], "Decide whether it stays on."),
-                s(["PRESSURE"], "Decides the edge quality."),
+                fs(clip("pressing", 9), ["PRESSURE"], "Decides the edge quality."),
                 y("We run 3D, reflective, fluor, matt and silicone.")]
     if tid == "goalkeeper":
-        return [s(["A KEEPER SHIRT", "ISN'T AN", "OUTFIELD SHIRT", "WITH LONG SLEEVES"], "Four things change.", hi=0),
-                y("Elbow padding changes the sleeve construction.", n=1),
-                y("Heavier fabric, because it meets the ground.", n=2),
+        return [fs(clip("sewing-machine-vertical", 16), ["A KEEPER SHIRT", "ISN'T AN", "OUTFIELD SHIRT", "WITH LONG SLEEVES"], "Four things change.", hi=0),
+                fy(clip("sewing-closeup", 3), "Elbow padding changes the sleeve construction.", n=1),
+                fy(clip("mill-process", 0), "Heavier fabric, because it meets the ground.", n=2),
                 y("Looser cut through the body, for reach.", n=3),
                 y("Different colour rules — it has to contrast with both teams.", n=4),
                 s(["BUILT FOR", "A DIFFERENT", "JOB."])]
@@ -208,7 +249,7 @@ def poster(tid, P):
                 c(2000, "", "Pieces a day", "Then 3 to 7 days by sea to Southern Europe."),
                 s(["TRIM.", "MEASURE.", "PRESS."]), s(["FOLD.", "BAG.", "CARTON."]),
                 y("The last of the five inspection points. It checks decoration adhesion and final measurements."),
-                y("A well-made garment badly folded arrives looking cheap.")]
+                fy(clip("pressing", 8), "A well-made garment badly folded arrives looking cheap.")]
     raise KeyError(tid)
 
 
@@ -339,6 +380,36 @@ BP = {
 }
 
 
+# ────────────────────────────────────────────────────────── real footage ─────
+# What each versus and blueprint reel cuts to. (The poster reels name their
+# clips line by line, above.) The rule for all of them: a line only goes over
+# a clip that shows what the line is about, or over a neutral close-up — and
+# nothing in SoccerTex's own voice goes over library footage at all, which
+# engine/vibes.py enforces. A hook that speaks as "we" stays a drawn card.
+#
+# versus:    (clip under the hook or None, [clips that break into the argument])
+# blueprint: (clip under the hook, {step: clip it plays over})
+CUTS = {
+    "lead-time":         (clip("sewing-floor", 0), [clip("cutting-knife", 8), clip("sewing-machine-vertical", 0)]),
+    "wrong-supplier":    (None, [clip("sewing-factory", 3), clip("cutting-machine", 2), clip("thread-spools", 3)]),
+    "reorder":           (clip("embroidery-line", 6), [clip("thread-spools", 0), clip("cutting-knife", 0)]),
+    "shrinkage":         (clip("pressing", 8.5), [clip("fabric-check", 8), clip("cutting-fabric-scissors", 2)]),
+
+    "price-drivers":     (clip("thread-spools", 4), {1: clip("thread-spools", 9), 3: clip("sewing-closeup", 0)}),
+    "pem-cumulation":    (clip("mill-process", 5), {0: clip("mill-worker", 0), 1: clip("sewing-threading", 6)}),
+    "trading-company":   (clip("sewing-closeup", 4), {}),
+    "decoration":        (clip("sewing-machine-working", 5), {1: clip("embroidery-line", 0), 3: clip("screen-printing", 6)}),
+    "fabric-glossary":   (clip("mill-process", 9), {5: clip("pressing", 9)}),
+    "seams":             (clip("sewing-closeup", 0), {2: clip("sewing-machine-vertical", 5), 3: clip("sewing-threading", 0)}),
+    "white-kit":         (clip("fabric-production-overhead", 0), {2: clip("cutting-knife", 3), 3: clip("fabric-production-overhead", 11)}),
+    "factory-questions": (clip("cutting-knife", 6), {0: clip("fabric-production-overhead", 5), 4: clip("fabric-check", 6)}),
+    "quality":           (clip("sewing-machine-vertical", 20), {0: clip("fabric-production-overhead", 14), 2: clip("cutting-machine", 1)}),
+    "sewing-line":       (clip("sewing-factory", 0), {0: clip("sewing-floor", 6), 2: clip("sewing-closeup", 2)}),
+    "heat-press":        (clip("pressing", 5.5), {3: clip("pressing", 8)}),
+    "kit-decisions":     (clip("thread-spools", 7), {1: clip("sewing-closeup", 4), 3: clip("sewing-machine-working", 2)}),
+}
+
+
 # ──────────────────────────────────────────────────────────────── build ─────
 def build(tid: str, variant: str = "social") -> tuple[Video, dict]:
     family, skin, kind, pace = LOOK[tid]
@@ -351,11 +422,19 @@ def build(tid: str, variant: str = "social") -> tuple[Video, dict]:
         scenes, colours = poster(tid, kit), kit.close
     elif family == "versus":
         c = V.VERSUS_SKINS[skin]
-        scenes, colours = [VersusScene(*VS[tid], skin=skin, mode=kind, pace=hold)], (c["bg"], c["txt"], c["grn"])
+        colours = (c["bg"], c["txt"], c["grn"])
+        opener, rolls = CUTS[tid]
+        vs = VersusScene(*VS[tid], skin=skin, mode=kind, pace=hold, hookclip=opener)
+        # footage breaks in just before the second and the last pair of rows
+        whens = sorted(set(vs.ta[1:]))[:len(rolls)]
+        scenes = [Breaks(vs, [(w, Plate(r, chip=vs.title, colours=colours, seconds=1.25 * hold))
+                              for w, r in zip(whens, rolls)])]
     else:
         hook, sub, title, steps, diagram = BP[tid]
         c = V.BLUE_SKINS[skin]
-        scenes = [BlueprintScene(hook, sub, title, steps, diagram(), skin=skin, pace=hold)]
+        opener, over = CUTS[tid]
+        scenes = [BlueprintScene(hook, sub, title, steps, diagram(), skin=skin, pace=hold,
+                                 hookclip=opener, footage=over)]
         colours = (c["bg"], c["line"], c["accent"])
     for s in scenes:
         v.add(s)
@@ -364,12 +443,73 @@ def build(tid: str, variant: str = "social") -> tuple[Video, dict]:
     return v, dict(bpm=bpm, mood=mood)
 
 
+def write_cuts(tid, variants):
+    """Render a topic's cuts together. They differ only in the closing card, so
+    the body is drawn once and sent to every encoder — footage frames are the
+    slow part, and drawing them twice doubled the render for nothing."""
+    from engine.render import W, H
+    from engine.audio import soundtrack
+    built = [build(tid, variant) for variant in variants]
+    encoders = []
+    for v, sound in built:
+        audio = soundtrack(v.seconds, v.cut_times, path=v.out.parent.parent / "audio" / f"{v.out.stem}.wav",
+                           seed=zlib.crc32(v.out.stem.encode()) % 1000, marks=v.mark_times, **sound)
+        cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
+               "-s", f"{W}x{H}", "-r", str(v.fps), "-i", "-"]
+        if audio and Path(audio).exists():
+            cmd += ["-i", str(audio), "-c:a", "aac", "-b:a", "128k", "-shortest"]
+        # crf 24, not 20: moving footage costs six times the bits of flat colour,
+        # and sixty files at 20 came to 287 MB in a repository that keeps every
+        # version. Instagram re-encodes to less than either.
+        cmd += ["-c:v", "libx264", "-preset", "medium", "-crf", "24", "-pix_fmt", "yuv420p",
+                "-movflags", "+faststart", "-profile:v", "high", "-level", "4.0", str(v.out)]
+        encoders.append(subprocess.Popen(cmd, stdin=subprocess.PIPE))
+
+    def send(scene, targets):
+        try:
+            for i in range(scene.n):
+                buf = scene.frame(i, scene.n).tobytes()
+                if len(buf) != W * H * 3:
+                    raise RuntimeError(f"{type(scene).__name__} produced {len(buf)} bytes")
+                for e in targets:
+                    e.stdin.write(buf)
+        finally:
+            scene.close()
+
+    err = None
+    try:
+        for scene in built[0][0].scenes[:-1]:
+            send(scene, encoders)
+        for (v, _), e in zip(built, encoders):
+            send(v.scenes[-1], [e])
+    except Exception as e:
+        err = e
+    finally:
+        codes = []
+        for e in encoders:
+            try:
+                e.stdin.close()
+            except BrokenPipeError:
+                pass
+            codes.append(e.wait())
+        for v, _ in built[1:]:
+            for scene in v.scenes:
+                scene.close()
+    if err is not None:
+        raise err
+    if any(codes):
+        raise RuntimeError(f"ffmpeg exited {codes} for {tid}")
+    return [v for v, _ in built]
+
+
 def main():
     args = sys.argv[1:]
     check_spread()
+    first = check_footage()
     if "--list" in args:
         for t in BANK:
-            print(f"  {t['id']:20s} " + "  ".join(f"{x:10s}" for x in LOOK[t["id"]]))
+            print(f"  {t['id']:20s} " + "  ".join(f"{x:10s}" for x in LOOK[t["id"]])
+                  + f"  opens on {first[t['id']] or 'a drawn card'}")
         return
     variants = [a.lstrip("-") for a in args if a.startswith("--")] or ["social", "business"]
     which = [a for a in args if not a.startswith("--")] or [t["id"] for t in BANK]
@@ -378,18 +518,16 @@ def main():
         sys.exit(f"unknown topic: {', '.join(bad)}")
     OUT.mkdir(parents=True, exist_ok=True)
     for tid in which:
-        for variant in variants:
-            v, sound = build(tid, variant)
-            v.write(music=True, quiet=False, **sound)
+        for v in write_cuts(tid, variants):
             # trust the file on disk, not the composer's intent
             r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
                                 "-of", "csv=p=0", str(v.out)], capture_output=True, text=True)
             got = float(r.stdout.strip() or 0)
             if got < v.seconds * 0.9 or got < 8.0:
                 v.out.unlink(missing_ok=True)
-                raise RuntimeError(f"{tid}--{variant}: only {got:.1f}s on disk, "
+                raise RuntimeError(f"{v.out.stem}: only {got:.1f}s on disk, "
                                    f"composer wrote {v.seconds:.1f}s — deleted")
-            print(f"  {tid}--{variant}: {got:.1f}s on disk, {' / '.join(LOOK[tid])}  OK")
+            print(f"  {v.out.stem}: {got:.1f}s on disk, {' / '.join(LOOK[tid])}  OK", flush=True)
 
 
 if __name__ == "__main__":

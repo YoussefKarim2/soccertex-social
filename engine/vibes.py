@@ -455,6 +455,19 @@ class Poster:
     def count(self, value, suffix, label, note=None):
         return Count(value, suffix, label, note, **self._next(2))
 
+    def _plate(self, spec, scheme, **kw):
+        c = self._next(scheme)
+        return Plate(spec, colours=(c["bg"], c["fg"], c["accent"]), align=c["align"],
+                     motion=c["motion"], pace=c["pace"], **kw)
+
+    def fslam(self, spec, lines, sub=None, hi=None, scheme=None):
+        """A slam over real footage."""
+        return self._plate(spec, scheme, lines=lines, sub=sub, hi=hi)
+
+    def fsay(self, spec, text, n=None, scheme=None):
+        """A sentence over real footage."""
+        return self._plate(spec, scheme, text=text, n=n)
+
     @property
     def close(self):
         bg, fg, accent = self.schemes[2]
@@ -605,9 +618,16 @@ class VersusScene(Scene):
     its answer underneath — which is faster and louder.
     """
 
-    def __init__(self, hook, sub, title, a, b, final=None, hook_s=2.1, skin="dark", mode="stack", pace=1.0):
+    def __init__(self, hook, sub, title, a, b, final=None, hook_s=2.1, skin="dark", mode="stack", pace=1.0,
+                 hookclip=None):
         self.hook, self.sub, self.title, self.final, self.hook_s = hook, sub, title, final, hook_s
         self.c, self.mode = VERSUS_SKINS[skin], mode
+        # the hook can play over real footage instead of the split card
+        self.hookshot = None
+        if hookclip:
+            stock_ok(hook, sub)
+            self.hookshot = open_clip(hookclip, hook_s)
+            self.hookrows = type_rows(lines=hook, sub=sub, colours=(self.c["bg"], self.c["txt"], self.c["grn"]))
         (self.la, self.ra), (self.lb, self.rb) = a, b
         k_a, k_b = (0.75, 0.9) if mode == "stack" else (0.85, 1.05)
         t, self.ta, self.tb = hook_s + 0.25, [], []
@@ -620,6 +640,10 @@ class VersusScene(Scene):
             fit(title, "num", INNER, 56, 40, 2, 1.12), fit(final or title, "head", INNER, 62, 40, 2, 1.12))]
         self.top = BAND_T + max(heights) + 20
         super().__init__(self.end_t + (read_secs(final) + 0.7 if final else 0.9))
+
+    def close(self):
+        if self.hookshot:
+            self.hookshot.close()
 
     def _hook(self, d, t):
         c = self.c
@@ -651,8 +675,14 @@ class VersusScene(Scene):
         img = Image.new("RGB", (W, H), c["bg"])
         d = ImageDraw.Draw(img)
         if t < self.hook_s:
+            if self.hookshot:
+                img = self.hookshot.frame(i, self.hookshot.n)
+                draw_rows(ImageDraw.Draw(img), self.hookrows, t)
+                return img
             self._hook(d, t)
             return img
+        if self.hookshot:
+            self.hookshot.close()
 
         closing = self.final and t >= self.end_t
         head = self.final if closing else self.title
@@ -734,7 +764,8 @@ class BlueprintScene(Scene):
     _bgs = {}
     BOX_H = 590
 
-    def __init__(self, hook, sub, title, steps, diagram, hook_s=2.1, skin="blueprint", pace=1.0):
+    def __init__(self, hook, sub, title, steps, diagram, hook_s=2.1, skin="blueprint", pace=1.0,
+                 hookclip=None, footage=None):
         self.hook, self.sub, self.title, self.steps, self.diagram, self.hook_s = hook, sub, title, steps, diagram, hook_s
         self.skin = skin
         t, self.starts = hook_s, []
@@ -742,6 +773,54 @@ class BlueprintScene(Scene):
             self.starts.append(t); t += (read_secs(key + " " + detail) + 0.45) * pace
         self.marks = list(self.starts)
         super().__init__(t + 0.5)
+        # Real footage: the hook, and any step listed in `footage`, play over a
+        # library clip instead of the sheet. The drawing keeps the other steps.
+        c = BLUE_SKINS[skin]
+        cols = (c["bg"], c["line"], c["accent"])
+        ends = self.starts[1:] + [t + 0.5]
+        self.shots, self.rows = {}, {}
+        if hookclip:
+            stock_ok(hook, sub)
+            self.shots[-1] = open_clip(hookclip, hook_s)
+            self.rows[-1] = type_rows(text=hook, sub=sub, colours=cols, kind="num", room=640, tmax=128)
+        for k, spec in (footage or {}).items():
+            key, detail = steps[k]
+            stock_ok(key, detail, title)
+            self.shots[k] = open_clip(spec, ends[k] - self.starts[k])
+            fk, _ = fit(f"{k + 1}  {key}", "head", TEXT_W, 78, 44, 1)
+            fd, drows = fit(detail, "med", TEXT_W, 56, 38, 4, 1.3, 330)
+            self.rows[k] = ([(f"{k + 1}  {key}", fk, c["accent"], c["bg"], 8)]
+                            + [(ln, fd, c["bg"], c["line"], 0) for ln in drows])
+
+    def close(self):
+        for s in self.shots.values():
+            s.close()
+
+    def _plate(self, k, i, t):
+        """Step k (or the hook, k = -1) over its clip."""
+        c = BLUE_SKINS[self.skin]
+        shot = self.shots[k]
+        t0 = 0.0 if k < 0 else self.starts[k]
+        li = max(0, min(shot.n - 1, i - math.ceil(t0 * FPS - 1e-6)))
+        img = shot.frame(li, shot.n)
+        d = ImageDraw.Draw(img)
+        if k >= 0:
+            # the sheet's header rides along, so the step still reads as one of a set
+            f, _ = fit(self.title, "num", TEXT_W - 150, 40, 26, 1)
+            h = int(40 * 1.4)
+            a, b = f.getmetrics()
+            d.rectangle([BOX_X, PLATE_TOP, BOX_X + _M.textlength(self.title, font=f) + 2 * PX, PLATE_TOP + h], fill=c["bg"])
+            d.text((BOX_X + PX, PLATE_TOP + (h - (a + b)) / 2), self.title, font=f, fill=c["accent"])
+            cnt = f"{k + 1} / {len(self.steps)}"
+            fc = F("num", 40)
+            wc = _M.textlength(cnt, font=fc) + 2 * PX
+            a, b = fc.getmetrics()
+            d.rectangle([W - BOX_X - wc, PLATE_TOP, W - BOX_X, PLATE_TOP + h], fill=c["bg"])
+            d.text((W - BOX_X - wc + PX, PLATE_TOP + (h - (a + b)) / 2), cnt, font=fc, fill=c["line"])
+        draw_rows(d, self.rows[k], t, t0=t0)
+        if li == shot.n - 1:
+            shot.close()
+        return img
 
     def bg(self):
         if self.skin not in self._bgs:
@@ -759,6 +838,12 @@ class BlueprintScene(Scene):
         global K
         K = c = BLUE_SKINS[self.skin]
         t = i / FPS
+        if t < self.hook_s and -1 in self.shots:
+            return self._plate(-1, i, t)
+        if t >= self.hook_s:
+            now = max(k for k, s in enumerate(self.starts) if s <= t)
+            if now in self.shots:
+                return self._plate(now, i, t)
         img = self.bg()
         d = ImageDraw.Draw(img)
         wordmark(d, c["mark"])
@@ -1132,3 +1217,182 @@ class DocShot(Shot):
                     d.text((SAFE, y), ln, font=f, fill=(250, 248, 240), stroke_width=4, stroke_fill=(0, 0, 0))
                 y += f.size * 1.22
         return img
+
+
+# ═════════════════════════════════════════════════════════ real footage ═════
+# 15 Nov, night: "i like the videos vibe ... but i want more real life videos of
+# factory videos, such as cutting, stitching." So the three families keep their
+# look and real footage is cut into them: the hook plays over a moving plate,
+# and lines that describe a process play over that process.
+#
+# The footage is licensed library footage, not SoccerTex's floor, and three
+# rules keep it honest:
+#   1. every plate carries the "Library footage" stamp (engine/reel.py);
+#   2. nothing in SoccerTex's own voice — we, our, us, the name — is ever set
+#      over it (`stock_ok` raises before a frame is drawn);
+#   3. a line only goes over a clip that shows what the line is about, or over
+#      a neutral close-up. That one is editorial, and lives in build_vibes.py.
+import re
+from pathlib import Path
+from engine.footage import guard, StockMisuse
+
+PROXY = Path(__file__).resolve().parent.parent / "assets" / "footage" / "proxy"
+OWN_VOICE = re.compile(r"\b(we|we're|we'll|we've|we'd|our|ours|us)\b|soccertex", re.I)
+PX = 22                                  # padding inside a type box
+BOX_X = SAFE - 12                        # lines up with the library stamp
+TEXT_W = W - 2 * BOX_X - 2 * PX
+PLATE_TOP = LABEL_Y + 46 + 22            # nothing rides over the stamp
+
+
+def stock_ok(*texts):
+    """Refuse SoccerTex's own voice over somebody else's factory."""
+    for t in texts:
+        if not t:
+            continue
+        s = " ".join(t) if isinstance(t, (list, tuple)) else str(t)
+        guard(s, "stock")
+        m = OWN_VOICE.search(s)
+        if m:
+            raise StockMisuse(f"{m.group(0)!r} in {s!r}: SoccerTex's own voice cannot sit over "
+                              f"library footage. Keep that line on a drawn card.")
+
+
+def clip(name, start=0.0, tight=1.0, focus=(0.5, 0.5), mirror=False, zoom=1.07):
+    """A piece of a library clip: which one, from when, and how it is framed."""
+    p = PROXY / f"{name}.mp4"
+    if not p.exists():
+        raise FileNotFoundError(f"{p} — see assets/footage/README.md")
+    return dict(path=p, start=start, tight=tight, focus=focus, mirror=mirror, zoom=zoom)
+
+
+def _easy(shot):
+    """A push of a few percent needs no sharpening pass — it is invisible, and
+    the pass is the slowest thing in the frame."""
+    if shot.stretch <= 1.10:
+        shot.stretch = 1.0
+    return shot
+
+
+def open_clip(spec, seconds):
+    """The clip as a bare moving picture, stamp included, no type."""
+    return _easy(Shot(spec["path"], seconds, overlay=None, blur_edge=0, scrim=0.0,
+                      **{k: spec[k] for k in ("start", "tight", "focus", "mirror", "zoom")}))
+
+
+def type_rows(lines=None, text=None, sub=None, n=None, chip=None, colours=(INK, BONE, AMBER),
+              hi=None, kind="head", big=150, room=600, tmax=84):
+    """Type for a plate, as rows of (string, font, box, ink). Slam lines share
+    one size so the right edge stays ragged and the footage shows past it."""
+    bg, fg, accent = colours
+    pop = accent if accent != bg else fg
+    rows = []
+    if chip:
+        f, wrapped = fit(chip, "num", TEXT_W, 46, 30, 2, 1.0)
+        rows += [(ln, f, bg, pop, 8 if k == len(wrapped) - 1 else 0) for k, ln in enumerate(wrapped)]
+    if n is not None:
+        rows.append((str(n), F("num", 130), pop, bg, 0))
+    sub_rows = []
+    if sub:
+        f, wrapped = fit(sub, "med", TEXT_W, 46, 34, 3, 1.0)
+        sub_rows = [(ln, f, pop, bg, 0) for ln in wrapped]
+    left = room - sum(r[1].size * 1.3 + r[4] for r in rows + sub_rows)
+    if lines:
+        size = min([big] + [200 * TEXT_W / max(1, _M.textlength(ln, font=F(kind, 200))) for ln in lines])
+        size = min(size, left / (len(lines) * 1.3))
+        rows += [(ln, F(kind, size), bg, accent if (k == hi and accent != bg) else fg,
+                  10 if (k == len(lines) - 1 and sub_rows) else 0) for k, ln in enumerate(lines)]
+    if text:
+        f, wrapped = fit(text, kind, TEXT_W, tmax, 46, 6, 1.3, left)
+        rows += [(ln, f, bg, fg, 10 if (k == len(wrapped) - 1 and sub_rows) else 0)
+                 for k, ln in enumerate(wrapped)]
+    return rows + sub_rows
+
+
+def draw_rows(d, rows, t, bottom=BAND_B - 6, align="left", motion="pop", stagger=0.07, t0=0.0):
+    """Stack the rows upward from `bottom`, each in its own tight box."""
+    hs = [int(r[1].size * 1.3) for r in rows]
+    y = bottom - sum(hs) - sum(r[4] for r in rows)
+    if y < PLATE_TOP:
+        raise ValueError(f"type runs {PLATE_TOP - y:.0f}px over the library stamp: {[r[0] for r in rows]}")
+    for k, ((s, f, box, ink, gap), h) in enumerate(zip(rows, hs)):
+        tk = t0 + k * stagger
+        if t >= tk:
+            p = ease_out(prog(t, tk, 0.18))
+            w = _M.textlength(s, font=f) + 2 * PX
+            x = BOX_X if align == "left" else (W - w) / 2
+            dx = -(1 - p) * 60 if motion == "pop" else 0
+            dy = (1 - p) * 44 if motion == "rise" else 0
+            d.rectangle([x + dx, y + dy, x + dx + w, y + dy + h + 1], fill=box)
+            a, b = f.getmetrics()
+            d.text((x + dx + PX, y + dy + (h - (a + b)) / 2), s, font=f, fill=ink)
+        y += h + gap
+
+
+class Plate(Shot):
+    """Real footage, full frame and in its own colours, with the reel's type
+    set over it in tight boxes of the reel's colourway."""
+
+    def __init__(self, spec, lines=None, text=None, sub=None, n=None, chip=None,
+                 colours=(INK, BONE, AMBER), hi=None, kind="head", align="left", motion="pop",
+                 seconds=None, pace=1.0, big=150):
+        stock_ok(lines, text, sub, chip)
+        if seconds is None:
+            if lines:
+                seconds = (0.6 + 0.34 * len(lines) + (read_secs(sub) * 0.75 if sub else 0.35)) * pace
+            elif text:
+                seconds = (read_secs(text) + 0.45) * pace
+            else:
+                seconds = 1.1 * pace
+        seconds = max(1.0, min(3.8, seconds))
+        super().__init__(spec["path"], seconds, overlay=None, blur_edge=0, scrim=0.0,
+                         **{k: spec[k] for k in ("start", "tight", "focus", "mirror", "zoom")})
+        self.rows = type_rows(lines, text, sub, n, chip, colours, hi, kind, big)
+        self.align, self.motion = align, motion
+        _easy(self)
+
+    def frame(self, i, n):
+        img = super().frame(i, n)
+        draw_rows(ImageDraw.Draw(img), self.rows, i / FPS, align=self.align, motion=self.motion)
+        return img
+
+
+class Breaks(Scene):
+    """Lets real footage interrupt a drawn scene. At each `(when, plate)` the
+    drawn scene holds exactly where it is, the plate plays, and it carries on."""
+
+    def __init__(self, inner, breaks):
+        self.inner, self.parts, at, out = inner, [], 0, 0
+        self.marks = []
+        shift = 0.0
+        pending = sorted(getattr(inner, "marks", ()))
+        for when, plate in sorted(breaks, key=lambda b: b[0]):
+            f = min(inner.n, int(when * FPS))
+            if f > at:
+                self.parts.append((out, f - at, None, at)); out += f - at
+            self.marks += [m + shift for m in pending if m < when]
+            pending = [m for m in pending if m >= when]
+            self.marks += [out / FPS, (out + plate.n) / FPS]
+            self.parts.append((out, plate.n, plate, 0)); out += plate.n
+            shift += plate.n / FPS
+            at = f
+        if inner.n > at:
+            self.parts.append((out, inner.n - at, None, at)); out += inner.n - at
+        self.marks += [m + shift for m in pending]
+        self.n = out
+
+    def frame(self, i, n):
+        for start, length, plate, base in self.parts:
+            if start <= i < start + length:
+                if plate is None:
+                    return self.inner.frame(base + i - start, self.inner.n)
+                img = plate.frame(i - start, plate.n)
+                if i - start == length - 1:
+                    plate.close()
+                return img
+        raise IndexError(i)
+
+    def close(self):
+        self.inner.close()
+        for _, _, plate, _ in self.parts:
+            if plate is not None:
+                plate.close()

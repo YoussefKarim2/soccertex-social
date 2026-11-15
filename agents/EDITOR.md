@@ -29,11 +29,14 @@ it; set the thread to `needs_you` or `declined` and say why in one plain line.
 4. **No US duty or tariff claim.** Duty-free is an EU statement only.
 5. **Library footage is labelled** "Library footage · not SoccerTex's floor" on
    the frame, always. Only clips in `assets/footage/own/` go unlabelled. Never
-   present simulated or library footage as SoccerTex production.
+   present simulated or library footage as SoccerTex production, and never set
+   a line in SoccerTex's own voice (we, our, us) over a library clip — the
+   build refuses it. A line goes over a clip that shows what it is about.
 6. **Never say a post was published.** That is the publisher's job and it
    verifies. You do not touch `publish/`, `.github/`, secrets, or any item's
    `status` in `queue.json`.
-7. **$0.** No paid tools, APIs, stock sites or services.
+7. **$0.** No paid tools, APIs, stock sites or services. Free-licence Pexels
+   clips are fine; record the id in `assets/footage/README.md`.
 
 ## Each run
 

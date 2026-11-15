@@ -11,7 +11,7 @@ rules marked **industry** come from third-party studies and are weaker.
 | Signal | Source | What it means for a cut |
 |---|---|---|
 | Watch time, likes and **sends** are the three ranking signals; sends per reach is what reaches non-followers | Adam Mosseri, head of Instagram (Jan 2025; repeated Oct 2026, "a lot more" weight on sends than comments) — **platform** | End on a reason to forward it. Make one idea per reel that a kit manager would send to a colleague. |
-| Original content is favoured; accounts that mostly repost lose recommendation | Instagram, 2026 — **platform** | Four stock clips recycled across 60 videos is the opposite of original. Own footage is the biggest lever we have. |
+| Original content is favoured; accounts that mostly repost lose recommendation | Instagram, 2026 — **platform** | Library clips are cut into our own drawn reels, never posted as they are. Own footage is still the biggest lever we have. |
 | Keep the top 14%, bottom 35% and 6% each side clear of text | Meta's Reels safe-zone guidance — **platform** | Captions at 60% height are safe. Anything below 65% is under the app's own caption. |
 | The steepest drop is in the first 3 seconds | retention studies — **industry** | Motion and the promise both on screen at frame 0. |
 | A picture that moves holds better than a title card | VidMob, reported second-hand — **industry**, treat as a lean not a law | Hook goes over footage, not on a flat colour. |
@@ -46,10 +46,47 @@ Three rules, enforced by `check_spread()` before anything renders:
 - no two reels in the library with the same family + colourway + variant;
 - `python3 build_vibes.py --list` prints the whole assignment.
 
-The four he liked are unchanged. Nothing uses library footage any more: every
-reel is drawn. The chat, notebook, documentary and fast-cut formats are still
-in the engine, unused; he did not pick them, and they can come back by giving
-a topic a spec.
+The chat, notebook, documentary and fast-cut formats are still in the engine,
+unused; he did not pick them, and they can come back by giving a topic a spec.
+
+## Real factory footage, cut into all three (15 Nov, night)
+
+"i like the videos vibe and i like how you changed the vibe in each video, but
+i want more real life videos of factory videos, such as cutting, stitching."
+
+So the look stays, and real footage is cut into it. Eighteen library clips
+(Pexels, free licence — listed with their sources in
+`assets/footage/README.md`): cutting by band knife, round knife and shears;
+sewing rooms and needle close-ups; an embroidery head and a row of them;
+thread cones; a spinning frame and a loom; fabric on frames; a screen-print
+carousel; a wide printer; pressing; a man with a tape measure.
+
+How it goes in (`Plate`, `Breaks` and the `hookclip`/`footage` options in
+`engine/vibes.py`; the clip for each line is named in `build_vibes.py`):
+
+- **The hook plays over a moving clip**, with the type in tight boxes of the
+  reel's own colourway — so the cover frame is real footage, and the reel
+  still looks like its family.
+- **poster** — lines about a process play over that process (`fslam`, `fsay`).
+- **blueprint** — one or two steps play over footage instead of the drawing;
+  the drawing keeps the steps it explains best.
+- **versus** — footage breaks into the argument for a second, twice.
+- 27 of 30 reels open on footage; a typical reel is a third to a half footage.
+
+Four rules. The first two are enforced in code and fail the build:
+
+1. Every clip is stamped "Library footage · not SoccerTex's floor".
+2. SoccerTex's own voice — we, our, us, the name — never sits over a clip.
+   That is why `tech-pack`, `wrong-supplier` and `packing` open on a drawn
+   card: their hooks speak as "we".
+3. A line goes over a clip that shows what the line is about, or over a
+   neutral close-up. No "FLATLOCK" over a machine that is not one.
+4. Nothing critical goes over a clip with a recognisable person in it.
+
+`trading-company` has footage under the hook only, on purpose: a reel about
+factories that cannot show their own floor should not lean on someone else's.
+`check_footage()` stops two reels that post back to back opening on the same
+clip, and `python3 tests/test_footage_rules.py` checks all of the above.
 
 ## What the audit found (measured, 14 Nov)
 
@@ -60,7 +97,8 @@ a topic a spec.
 3. **The close asked for nothing.** Fixed: the Instagram cut ends "Send this to
    whoever orders your kit"; the LinkedIn cut ends on the quote page.
 4. **20 of 30 topics were the old slide format.** Fixed 15 Nov: all 30 rebuilt.
-5. **Four clips carried everything.** Now none: every reel is drawn.
+5. **Four clips carried everything.** Now eighteen, cut into drawn reels
+   rather than carrying them.
 
 ## The order of work
 
@@ -70,8 +108,10 @@ a topic a spec.
    in, and move topics toward the ones that do. Nothing here is measured yet.
 4. **Own footage.** Ten phone clips from the SoccerTex floor (vertical, 10–20s,
    steady, no faces needed) go in `assets/footage/own/` and are used without
-   the library label. Drawn reels explain; only real footage proves. This one
-   only Youssef can do.
+   the library label. Library footage shows the process; only SoccerTex's own
+   footage proves it is SoccerTex doing it. `clip()` in `build_vibes.py` takes
+   an own clip the same way — swap the name and the stamp goes. This one only
+   Youssef can do.
 
 ## A cut is ready when
 
