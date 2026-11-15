@@ -103,6 +103,14 @@ def whoosh(dur=0.55, amp=0.5):
     return y * sweep * amp
 
 
+def tick(dur=0.09, amp=0.5):
+    """A soft, high pop — a message arriving, a box being ticked."""
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    sig = np.sin(2 * np.pi * (1500 - 5200 * t) * t) * _env(n, 0.001, dur * 0.5, 0.0, dur * 0.4)
+    return sig * amp
+
+
 def impact(dur=0.5, amp=0.7):
     n = int(dur * SR); t = np.arange(n) / SR
     f = 160 * np.exp(-t * 16) + 38
@@ -122,7 +130,12 @@ class Track:
     """A driving, slightly industrial bed in A minor. Mix sits low so it
     supports the cut instead of fighting it."""
 
-    def __init__(self, seconds, bpm=124, seed=0):
+    def __init__(self, seconds, bpm=124, seed=0, mood="drive"):
+        # mood: "drive" is the original bed. "calm" drops the snare and half
+        # the kicks and lets the pluck carry it; "punch" is drums and bass
+        # only, harder. Different formats get different beds so the library
+        # does not sound like one video either.
+        self.mood = mood
         self.seconds = seconds
         self.bpm = bpm
         self.n = int(seconds * SR)
@@ -151,29 +164,38 @@ class Track:
             b0 = bar * 4
             root, chord = prog[bar % 4]
 
+            calm, punch = self.mood == "calm", self.mood == "punch"
             # drums
             for i, beat in enumerate([0, 1, 2, 3]):
-                self._add(kick(), self._at(b0 + beat), 1.0 if i % 2 == 0 else .8)
-            self._add(snare(), self._at(b0 + 1), .9)
-            self._add(snare(), self._at(b0 + 3), .9)
+                if calm and beat in (1, 3):
+                    continue
+                g = 1.0 if i % 2 == 0 else .8
+                self._add(kick(), self._at(b0 + beat), g * (.62 if calm else 1.15 if punch else 1.0))
+            if not calm:
+                self._add(snare(), self._at(b0 + 1), 1.0 if punch else .9)
+                self._add(snare(), self._at(b0 + 3), 1.0 if punch else .9)
             for eighth in range(8):
                 op = eighth == 7
                 self._add(hat(open_=op), self._at(b0 + eighth * .5),
-                          .8 if eighth % 2 == 0 else .5)
+                          (.8 if eighth % 2 == 0 else .5) * (.4 if calm else 1.0))
             # a 16th roll into each new 4-bar phrase
-            if bar % 4 == 3:
+            if bar % 4 == 3 and not calm:
                 for k in range(4):
                     self._add(snare(.1), self._at(b0 + 3 + k * .25), .35 + k * .12)
 
             # bass on root
             self._add(sub(NOTES[root], 60.0 / self.bpm * 2.0), self._at(b0), .9)
             self._add(sub(NOTES[root], 60.0 / self.bpm * 1.0), self._at(b0 + 2.5), .7)
+            if punch:
+                self._add(sub(NOTES[root], 60.0 / self.bpm * .5), self._at(b0 + 1.5), .5)
+                self._add(sub(NOTES[root], 60.0 / self.bpm * .5), self._at(b0 + 3.5), .5)
 
-            # sparse pluck motif, only after the first bar so the open is clean
-            if bar >= 1:
+            # pluck motif: carries the calm bed from the first bar, sparse in
+            # the original, absent when it is all drums
+            if not punch and (calm or bar >= 1):
                 for j, beat in enumerate([0.5, 1.5, 2.25, 3.5]):
                     self._add(pluck(chord[j % len(chord)] * 2, .34),
-                              self._at(b0 + beat), .22)
+                              self._at(b0 + beat), .36 if calm else .22)
 
         out = self.buf[: self.n]
 
@@ -194,7 +216,7 @@ class Track:
 
     def accent(self, seconds, kind="whoosh", gain=1.0):
         """Place a transition sound at a timestamp."""
-        sig = whoosh() if kind == "whoosh" else impact()
+        sig = whoosh() if kind == "whoosh" else tick() if kind == "tick" else impact()
         self._add_out(sig, int(seconds * SR), gain)
         return self
 
@@ -221,13 +243,18 @@ class Track:
         return p
 
 
-def soundtrack(seconds, cuts=(), path="out/audio/bed.wav", bpm=124, seed=0):
-    """Build a bed of `seconds` with a whoosh at each cut timestamp."""
-    t = Track(seconds, bpm, seed).build()
+def soundtrack(seconds, cuts=(), path="out/audio/bed.wav", bpm=124, seed=0,
+               mood="drive", marks=()):
+    """Build a bed of `seconds` with a whoosh at each cut timestamp and a soft
+    tick at each mark (a message arriving, a row appearing)."""
+    t = Track(seconds, bpm, seed, mood).build()
     for i, c in enumerate(cuts):
         if 0 < c < seconds - .3:
             t.accent(c - .28, "whoosh", .45)
             t.accent(c, "impact", .30)
+    for m in marks:
+        if 0 < m < seconds - .2:
+            t.accent(m, "tick", .55)
     return t.fade().save(path)
 
 

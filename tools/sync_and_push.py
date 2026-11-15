@@ -5,6 +5,9 @@ Double-click "Push SoccerTex to GitHub.command" in this folder, or run:
 
     python3 tools/sync_and_push.py
 
+Anything new or changed in the folder is committed first, so an update that
+was unzipped here goes up with it.
+
 Why this is not just `git push`: GitHub's copy keeps changing on its own. The
 publisher records each post that goes out, the review desk records every
 decision, the agents record their work — all as commits to the same branch. A
@@ -78,11 +81,19 @@ def write(path, data):
 
 
 def main() -> int:
-    dirty = git("status", "--porcelain", "--untracked-files=no").stdout.strip()
+    # Work that arrived as files (an update unzipped into this folder) is saved
+    # as a commit first. The update can bring its own description of what it
+    # is in .commit-message; that file is used once and removed.
+    note = ROOT / ".commit-message"
+    message = "Changes made on this Mac"
+    if note.exists():
+        message = note.read_text().strip() or message
+        note.unlink()
+    dirty = git("status", "--porcelain").stdout.strip()
     if dirty:
-        print("There are changes here that were never committed:\n" + dirty +
-              "\n\nNothing was sent. Ask Claude to commit them, then run this again.")
-        return 1
+        print(f"Saving {len(dirty.splitlines())} new or changed file(s) from this Mac…")
+        git("add", "-A")
+        git("commit", "-q", "-m", message)
 
     for attempt in range(1, 4):
         print(f"Checking what GitHub has… (try {attempt})")
@@ -108,7 +119,9 @@ def main() -> int:
             for p in ("agents/status.json", "out/desk/preflight.txt"):
                 if git("cat-file", "-e", f"origin/main:{p}", check=False).returncode == 0:
                     git("checkout", "origin/main", "--", p)
-            git("add", "-A", "queue.json", "feedback.json", "agents/status.json", "out/desk/preflight.txt")
+            mine = [f for f in ("queue.json", "feedback.json", "agents/status.json",
+                                "out/desk/preflight.txt") if (ROOT / f).exists()]
+            git("add", "-A", *mine)
             left = git("diff", "--name-only", "--diff-filter=U").stdout.strip()
             if left:
                 git("merge", "--abort", check=False)

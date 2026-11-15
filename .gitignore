@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 .env
 out/preview/
+out/audio/
+.DS_Store
+*.zip

@@ -409,14 +409,25 @@ class Video:
             out.append(acc / self.fps)
         return out
 
-    def write(self, crf=20, audio=None, quiet=True, music=True, bpm=124):
+    @property
+    def mark_times(self):
+        """Moments inside scenes worth a soft tick — a scene lists them, in its
+        own seconds, as `marks`."""
+        out, acc = [], 0
+        for s in self.scenes:
+            out += [acc / self.fps + m for m in getattr(s, "marks", ())]
+            acc += s.n
+        return out
+
+    def write(self, crf=20, audio=None, quiet=True, music=True, bpm=124, mood="drive"):
         if shutil.which("ffmpeg") is None:
             raise RuntimeError("ffmpeg not installed")
         if audio is None and music:
             from engine.audio import soundtrack
             audio = soundtrack(self.seconds, self.cut_times,
                                path=self.out.parent.parent / "audio" / f"{self.out.stem}.wav",
-                               bpm=bpm, seed=abs(hash(self.out.stem)) % 1000)
+                               bpm=bpm, seed=abs(hash(self.out.stem)) % 1000,
+                               mood=mood, marks=self.mark_times)
         cmd = ["ffmpeg", "-y", "-loglevel", "error",
                "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
                "-r", str(self.fps), "-i", "-"]
