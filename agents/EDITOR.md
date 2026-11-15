@@ -50,18 +50,18 @@ missing — `ffmpeg`, and `pip install pillow numpy`. If that fails:
      (the beat commits and pushes, which is what makes the desk show it).
    - Read `like` on **every** thread for that video, not just this one. What he
      likes is a constraint: keep it.
-   - Decide. Every topic has a format — `python3 build_vibes.py --list` shows
-     which. Its words live in `build_vibes.py` (chat, poster, notebook, versus,
-     blueprint, doc) or, for the `cuts` format, in `build_silent.SCRIPTS`. Edit
-     the words there, using only facts from the topic's `engine/bank.py` entry.
-     If he asks for a different *look*, change the topic's entry in `FORMAT`
-     and write its spec in the new format. `check_spread()` refuses a choice
-     that puts the same format on the same or consecutive days; pick another.
+   - Decide. Every topic has a look — `python3 build_vibes.py --list` shows
+     its family (poster, blueprint, versus), colourway, variant and pace. Its
+     words live in `build_vibes.py`. Edit them there, using only facts from
+     the topic's `engine/bank.py` entry. If he asks for a different *look* or
+     *pace*, change the topic's row in `LOOK`. `check_spread()` refuses a
+     family on the same or consecutive days as itself, and refuses two reels
+     with the same look; pick another. Keep to the three families he chose
+     unless he asks for one of the others by name.
    - Render: `python3 build_vibes.py <topic>` renders both cuts (`--social` or
      `--business` for one). The words are shared, so a change means **both**.
-     Drawn formats take under a minute; `cuts` and `doc` decode footage and
-     take two to four — do not kill a render, a killed one leaves a truncated
-     file.
+     A render takes under a minute. Do not kill one — a killed render leaves
+     a truncated file.
    - Check it. The render must report the duration it planned. Pull frames at
      0s, the midpoint and the last second with ffmpeg and look at them: hook on
      frame 0, text inside the safe band, label present on library footage.

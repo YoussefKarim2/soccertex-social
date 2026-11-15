@@ -20,34 +20,36 @@ Not adopted: "longer reels reach more" (Buffer, 2.7M reels: 90s+ reached 4–7%
 above an account's own average). The effect is small, and a 20-second reel
 that is watched to the end beats a 90-second one that is not.
 
-## Seven formats, not one (15 Nov)
+## Three families he chose, and every reel different inside them (15 Nov)
 
-Youssef, 15 Nov: "all the videos are the same but only the words are
-different." It was structural: thirty topics, two templates, four clips.
-Each topic now has a format with its own picture, palette, type, motion and
-soundtrack (`engine/vibes.py`, assigned in `build_vibes.py`):
+Morning: "all the videos are the same but only the words are different."
+Seven formats were built. Evening: Youssef picked the four he liked —
+europe-duty, kit-decisions, seams and wrong-supplier — and asked for those on
+everything, with every upload different in pace and feel from the next.
 
-| Format | Look | Sound | Topics |
-|---|---|---|---|
-| chat | a message thread, dark | calm, 96 bpm | price-drivers, small-orders, buyer-questions, sublimation-limits, goalkeeper |
-| poster | giant type on flat colour, hard cuts | drums only, 134 | lead-time, europe-duty, trading-company, recovery-test, sewing-line |
-| notebook | paper checklist, ticks, highlighter | calm, 100 | season-calendar, tech-pack, fabric-glossary, factory-questions, nameset, packing |
-| versus | red column against green | driving, 118 | wrong-supplier, shrinkage, reorder |
-| blueprint | line drawings on a drafting grid | calm, 108 | pem-cumulation, decoration, seams, quality, kit-decisions |
-| doc | black-and-white footage, one amber word | slow drums, 90 | cutting, embroidery |
-| cuts | fast captions over footage | driving, 126 | gsm, cheap-vs-good, white-kit, heat-press |
+So the library is the three families behind those four, and the variety is
+inside them (`engine/vibes.py`, assigned in `build_vibes.py`):
 
-Two rules, both enforced by `check_spread()`:
+| Family | What varies | Reels |
+|---|---|---|
+| **poster** — giant type on flat colour, hard cuts, counting numbers | 7 colourways (ink, pitch, navy, paper, blue, mint, sunset) × left or centred × pop or rise | 14 |
+| **blueprint** — a drawing on a drafting sheet, one step at a time | 4 sheets (blueprint, night, white sheet, chalkboard) × 9 drawings (shirt with callouts, fabric cross-section, seam section, chain, ranked bars, checklist, warning signs, fabric swatches, heat press) | 12 |
+| **versus** — red side against green side | 3 palettes (dark, light, court) × stack (both columns fill) or duel (one pair at a time, large) | 4 |
 
-- Instagram posts topic *i* and topic *i+15* on the same day, and topic *i+1*
-  the next. A format never sits beside itself in the bank and never shares a
-  day with itself.
-- Five of the seven draw everything themselves. Only `cuts` and `doc` use the
-  four library clips — six topics out of thirty, down from all of them.
+Pace is set per reel — fast, steady or slow — and changes both how long each
+beat holds and the soundtrack (94 to 140 bpm; drums-only, driving, or calm).
 
-Where a format needed a line the bank does not have — a buyer's opening
-message in a chat — it is a question, never a claim, and the thread is headed
-"Illustration".
+Three rules, enforced by `check_spread()` before anything renders:
+
+- no family on the same day as itself (Instagram posts topic *i* and *i+15*
+  together) or on consecutive days;
+- no two reels in the library with the same family + colourway + variant;
+- `python3 build_vibes.py --list` prints the whole assignment.
+
+The four he liked are unchanged. Nothing uses library footage any more: every
+reel is drawn. The chat, notebook, documentary and fast-cut formats are still
+in the engine, unused; he did not pick them, and they can come back by giving
+a topic a spec.
 
 ## What the audit found (measured, 14 Nov)
 
@@ -58,8 +60,7 @@ message in a chat — it is a question, never a claim, and the thread is headed
 3. **The close asked for nothing.** Fixed: the Instagram cut ends "Send this to
    whoever orders your kit"; the LinkedIn cut ends on the quote page.
 4. **20 of 30 topics were the old slide format.** Fixed 15 Nov: all 30 rebuilt.
-5. **Four clips carried everything.** Now six topics. One plate (scissors on
-   fabric) is soft; `doc` uses it wide and in black and white, never tight.
+5. **Four clips carried everything.** Now none: every reel is drawn.
 
 ## The order of work
 
@@ -68,9 +69,9 @@ message in a chat — it is a question, never a claim, and the thread is headed
 3. Watch which formats earn sends and watch time once a fortnight of posts is
    in, and move topics toward the ones that do. Nothing here is measured yet.
 4. **Own footage.** Ten phone clips from the SoccerTex floor (vertical, 10–20s,
-   steady, no faces needed) go in `assets/footage/own/`, are used without the
-   library label, and would let `doc` and `cuts` show the real factory. This
-   one only Youssef can do.
+   steady, no faces needed) go in `assets/footage/own/` and are used without
+   the library label. Drawn reels explain; only real footage proves. This one
+   only Youssef can do.
 
 ## A cut is ready when
 

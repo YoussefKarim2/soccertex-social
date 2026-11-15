@@ -277,13 +277,47 @@ class ChatScene(Scene):
 # ═══════════════════════════════════════════════════════════════ poster ═════
 INK, BONE, AMBER = (12, 12, 11), (243, 238, 226), (236, 164, 52)
 
+# Seven colourways for the poster format. Each is three schemes (background,
+# type, accent) that a reel rotates through, so its own cuts contrast and no
+# two poster reels share a palette.
+POSTER_SKINS = {
+    "ink":    [(INK, BONE, AMBER), (BONE, INK, (196, 70, 44)), (AMBER, INK, INK)],
+    "pitch":  [((6, 40, 24), (236, 250, 240), (190, 240, 90)), ((236, 250, 240), (6, 40, 24), (20, 132, 68)),
+               ((190, 240, 90), (6, 40, 24), (6, 40, 24))],
+    "navy":   [((14, 24, 56), (246, 240, 226), (255, 112, 84)), ((246, 240, 226), (14, 24, 56), (232, 84, 58)),
+               ((255, 112, 84), (14, 24, 56), (14, 24, 56))],
+    "paper":  [((243, 238, 226), (18, 18, 16), (214, 64, 40)), ((18, 18, 16), (243, 238, 226), (240, 104, 76)),
+               ((214, 64, 40), (250, 244, 232), (250, 244, 232))],
+    "blue":   [((8, 8, 10), (250, 250, 250), (72, 150, 255)), ((250, 250, 250), (8, 8, 10), (36, 104, 232)),
+               ((36, 104, 232), (250, 250, 250), (250, 250, 250))],
+    "mint":   [((214, 244, 226), (8, 44, 28), (20, 132, 68)), ((8, 44, 28), (214, 244, 226), (120, 230, 160)),
+               ((20, 132, 68), (240, 252, 244), (240, 252, 244))],
+    "sunset": [((48, 12, 20), (250, 240, 226), (255, 140, 60)), ((250, 240, 226), (48, 12, 20), (220, 90, 40)),
+               ((255, 140, 60), (48, 12, 20), (48, 12, 20))],
+}
+
+
+def _ax(align, b):
+    """x for a line whose bbox is b, flush left or centred."""
+    return SAFE - b[0] if align == "left" else (W - (b[2] - b[0])) / 2 - b[0]
+
+
+def _rows(d, rows, f, y, align, fill, lh, dy=0):
+    for ln in rows:
+        x = SAFE if align == "left" else (W - _M.textlength(ln, font=f)) / 2
+        d.text((x, y + dy), ln, font=f, fill=fill)
+        y += f.size * lh
+    return y
+
 
 class Slam(Scene):
-    """Lines of type, each set as wide as the frame, landing one at a time."""
+    """Lines of type, each set as wide as the frame, landing one at a time.
+    motion: "pop" grows into place, "rise" comes up from below."""
 
-    def __init__(self, lines, sub=None, bg=INK, fg=BONE, accent=AMBER, hi=None, seconds=None, stagger=0.10):
+    def __init__(self, lines, sub=None, bg=INK, fg=BONE, accent=AMBER, hi=None, seconds=None,
+                 stagger=0.10, align="left", motion="pop", pace=1.0):
         self.lines, self.sub, self.bg, self.fg, self.accent, self.hi = lines, sub, bg, fg, accent, hi
-        self.stagger = stagger
+        self.stagger, self.align, self.motion = stagger, align, motion
         base = F("head", 200)
         self.sizes = [min(380, 200 * INNER / max(1, _M.textlength(ln, font=base))) for ln in lines]
         room = (BAND_B - BAND_T) - (150 if sub else 0)
@@ -296,8 +330,8 @@ class Slam(Scene):
         self.total = sum(self.heights) + 24 * (len(lines) - 1)
         self.y0 = BAND_T + (room - self.total) / 2
         if seconds is None:
-            seconds = 0.55 + 0.34 * len(lines) + (read_secs(sub) * 0.75 if sub else 0.35)
-        super().__init__(max(1.3, min(3.6, seconds)))
+            seconds = (0.55 + 0.34 * len(lines) + (read_secs(sub) * 0.75 if sub else 0.35)) * pace
+        super().__init__(max(1.2, min(3.8, seconds)))
 
     @staticmethod
     def _bh(ln, size):
@@ -312,23 +346,21 @@ class Slam(Scene):
         for k, ln in enumerate(self.lines):
             tk = k * self.stagger
             if t >= tk:
-                # it lands slightly small and grows to size — never past the
-                # margins, which a shrink-from-large pop did on every wide line
-                sc = 0.90 + 0.10 * ease_out(prog(t, tk, 0.14))
+                p = ease_out(prog(t, tk, 0.16))
+                # it lands slightly small and grows to size — never past the margins
+                sc = 0.90 + 0.10 * p if self.motion == "pop" else 1.0
+                rise = (1 - p) * 46 if self.motion == "rise" else 0
                 f = F("head", self.sizes[k] * sc)
                 b = d.textbbox((0, 0), ln, font=f)
                 dy = (self.heights[k] - (b[3] - b[1])) / 2
-                d.text((SAFE - b[0], y - b[1] + dy), ln, font=f,
+                d.text((_ax(self.align, b), y - b[1] + dy + rise), ln, font=f,
                        fill=self.accent if k == self.hi else self.fg)
             y += self.heights[k] + 24
         if self.sub:
             ts = len(self.lines) * self.stagger + 0.1
             p = ease_out(prog(t, ts, 0.25))
             f, rows = fit(self.sub, "med", INNER, 50, 38, 3, 1.25)
-            yy = y + 14
-            for ln in rows:
-                d.text((SAFE, yy + (1 - p) * 16), ln, font=f, fill=mix(self.bg, self.fg, 0.85 * p))
-                yy += f.size * 1.25
+            _rows(d, rows, f, y + 14, self.align, mix(self.bg, self.fg, 0.85 * p), 1.25, (1 - p) * 16)
         wordmark(d, mix(self.bg, self.fg, 0.30))
         return img
 
@@ -336,11 +368,13 @@ class Slam(Scene):
 class Say(Scene):
     """One sentence, big, with an optional numeral. For lines too long to slam."""
 
-    def __init__(self, text, n=None, bg=INK, fg=BONE, accent=AMBER, seconds=None):
+    def __init__(self, text, n=None, bg=INK, fg=BONE, accent=AMBER, seconds=None,
+                 align="left", motion="pop", pace=1.0):
         self.text, self.num, self.bg, self.fg, self.accent = text, n, bg, fg, accent
+        self.align = align
         self.top = BAND_T + (250 if n is not None else 40)
         self.f, self.rows = fit(text, "head", INNER, 100, 56, 6, 1.14, BAND_B - self.top - 50)
-        super().__init__(seconds or read_secs(text) + 0.45)
+        super().__init__(seconds or (read_secs(text) + 0.45) * pace)
 
     def frame(self, i, n):
         t = i / FPS
@@ -349,16 +383,20 @@ class Say(Scene):
         if self.num is not None:
             p = ease_out(prog(t, 0, 0.18))
             fn = F("num", 300 - 40 * (1 - p))
-            d.text((SAFE - 8, BAND_T - 60), str(self.num), font=fn, fill=self.accent)
+            s = str(self.num)
+            x = SAFE - 8 if self.align == "left" else (W - _M.textlength(s, font=fn)) / 2
+            d.text((x, BAND_T - 60), s, font=fn, fill=self.accent)
         y = self.top
         if self.num is None:
             y = BAND_T + ((BAND_B - BAND_T) - len(self.rows) * self.f.size * 1.14) / 2 - 20
         for k, ln in enumerate(self.rows):
             p = ease_out(prog(t, 0.06 + k * 0.06, 0.2))
-            d.text((SAFE + (1 - p) * 30, y), ln, font=self.f, fill=mix(self.bg, self.fg, p))
+            x = SAFE if self.align == "left" else (W - _M.textlength(ln, font=self.f)) / 2
+            d.text((x + (1 - p) * 30, y), ln, font=self.f, fill=mix(self.bg, self.fg, p))
             y += self.f.size * 1.14
         sp = ease_out(prog(t, 0.3, 0.3))
-        d.rectangle([SAFE, y + 22, SAFE + int(200 * sp), y + 32], fill=self.accent)
+        x0 = SAFE if self.align == "left" else W / 2 - 100 * sp
+        d.rectangle([x0, y + 22, x0 + int(200 * sp), y + 32], fill=self.accent)
         wordmark(d, mix(self.bg, self.fg, 0.30))
         return img
 
@@ -366,12 +404,13 @@ class Say(Scene):
 class Count(Scene):
     """A number that counts up to itself, with what it is underneath."""
 
-    def __init__(self, value, suffix, label, note=None, bg=AMBER, fg=INK, accent=INK, seconds=None):
+    def __init__(self, value, suffix, label, note=None, bg=AMBER, fg=INK, accent=INK, seconds=None,
+                 align="left", motion="pop", pace=1.0):
         self.value, self.suffix, self.label, self.note = value, suffix, label, note
-        self.bg, self.fg, self.accent = bg, fg, accent
+        self.bg, self.fg, self.accent, self.align = bg, fg, accent, align
         final = f"{value:,}{suffix}"
         self.size = min(460, 200 * INNER / max(1, _M.textlength(final, font=F("num", 200))))
-        super().__init__(seconds or 1.5 + read_secs(label + " " + (note or ""), lo=1.2) * 0.8)
+        super().__init__(seconds or (1.5 + read_secs(label + " " + (note or ""), lo=1.2) * 0.8) * pace)
 
     def frame(self, i, n):
         t = i / FPS
@@ -381,22 +420,45 @@ class Count(Scene):
         f = F("num", self.size)
         b = d.textbbox((0, 0), f"{self.value:,}{self.suffix}", font=f)
         y = BAND_T + 30
-        d.text((SAFE - b[0], y - b[1]), f"{v:,}{self.suffix}", font=f, fill=self.accent)
+        d.text((_ax(self.align, b), y - b[1]), f"{v:,}{self.suffix}", font=f, fill=self.accent)
         y += (b[3] - b[1]) + 50
         p = ease_out(prog(t, 0.7, 0.3))
         fl, rows = fit(self.label, "head", INNER, 66, 46, 3, 1.12)
-        for ln in rows:
-            d.text((SAFE, y + (1 - p) * 20), ln, font=fl, fill=mix(self.bg, self.fg, p))
-            y += fl.size * 1.12
+        y = _rows(d, rows, fl, y, self.align, mix(self.bg, self.fg, p), 1.12, (1 - p) * 20)
         if self.note:
             p2 = ease_out(prog(t, 1.0, 0.3))
             fnote, rows = fit(self.note, "med", INNER, 46, 36, 3, 1.28)
-            y += 22
-            for ln in rows:
-                d.text((SAFE, y), ln, font=fnote, fill=mix(self.bg, self.fg, 0.8 * p2))
-                y += fnote.size * 1.28
+            _rows(d, rows, fnote, y + 22, self.align, mix(self.bg, self.fg, 0.8 * p2), 1.28)
         wordmark(d, mix(self.bg, self.fg, 0.30))
         return img
+
+
+class Poster:
+    """Hands out slams, sentences and counters in one colourway, alignment,
+    motion and pace, rotating the colourway's three schemes cut by cut."""
+
+    def __init__(self, skin, align="left", motion="pop", pace=1.0):
+        self.schemes, self.kw, self.k = POSTER_SKINS[skin], dict(align=align, motion=motion, pace=pace), 0
+
+    def _next(self, scheme):
+        if scheme is None:
+            scheme, self.k = self.k % 3, self.k + 1
+        bg, fg, accent = self.schemes[scheme]
+        return dict(bg=bg, fg=fg, accent=accent, **self.kw)
+
+    def slam(self, lines, sub=None, hi=None, scheme=None):
+        return Slam(lines, sub, hi=hi, **self._next(scheme))
+
+    def say(self, text, n=None, scheme=None):
+        return Say(text, n, **self._next(scheme))
+
+    def count(self, value, suffix, label, note=None):
+        return Count(value, suffix, label, note, **self._next(2))
+
+    @property
+    def close(self):
+        bg, fg, accent = self.schemes[2]
+        return bg, fg, accent
 
 
 # ═════════════════════════════════════════════════════════════ notebook ═════
@@ -524,48 +586,72 @@ class NotebookScene(Scene):
 
 
 # ═══════════════════════════════════════════════════════════════ versus ═════
-class VersusScene(Scene):
-    """Two columns of an argument, revealed a row from each side at a time."""
-    BG, RED, GRN = (15, 17, 19), (226, 84, 60), (36, 178, 94)
-    PA, PB, TXT = (44, 24, 22), (18, 44, 30), (242, 242, 238)
+VERSUS_SKINS = {
+    # bg, the losing panel, the winning panel, type, red, green, sub colour
+    "dark":  dict(bg=(15, 17, 19), pa=(44, 24, 22), pb=(18, 44, 30), txt=(242, 242, 238),
+                  red=(226, 84, 60), grn=(36, 178, 94), soft=(214, 240, 222), mark=(70, 76, 80)),
+    "light": dict(bg=(246, 241, 230), pa=(250, 222, 214), pb=(214, 240, 222), txt=(22, 24, 22),
+                  red=(196, 52, 34), grn=(14, 122, 60), soft=(30, 70, 46), mark=(170, 166, 154)),
+    "court": dict(bg=(12, 18, 44), pa=(58, 24, 44), pb=(14, 58, 62), txt=(244, 244, 250),
+                  red=(255, 110, 100), grn=(72, 220, 160), soft=(200, 240, 228), mark=(70, 80, 120)),
+}
 
-    def __init__(self, hook, sub, title, a, b, final=None, hook_s=2.1):
+
+class VersusScene(Scene):
+    """Two sides of an argument.
+
+    mode "stack": both columns stay on screen and fill a row from each side at
+    a time. mode "duel": one pair at a time, large — the losing line on top,
+    its answer underneath — which is faster and louder.
+    """
+
+    def __init__(self, hook, sub, title, a, b, final=None, hook_s=2.1, skin="dark", mode="stack", pace=1.0):
         self.hook, self.sub, self.title, self.final, self.hook_s = hook, sub, title, final, hook_s
+        self.c, self.mode = VERSUS_SKINS[skin], mode
         (self.la, self.ra), (self.lb, self.rb) = a, b
+        k_a, k_b = (0.75, 0.9) if mode == "stack" else (0.85, 1.05)
         t, self.ta, self.tb = hook_s + 0.25, [], []
         for k in range(max(len(self.ra), len(self.rb))):
-            if k < len(self.ra): self.ta.append(t); t += read_secs(self.ra[k]) * 0.75
-            if k < len(self.rb): self.tb.append(t); t += read_secs(self.rb[k]) * 0.9
+            if k < len(self.ra): self.ta.append(t); t += read_secs(self.ra[k]) * k_a * pace
+            if k < len(self.rb): self.tb.append(t); t += read_secs(self.rb[k]) * k_b * pace
         self.end_t = t + 0.2
         self.marks = [hook_s] + self.ta + self.tb
+        heights = [len(r) * ff.size * 1.12 for ff, r in (
+            fit(title, "num", INNER, 56, 40, 2, 1.12), fit(final or title, "head", INNER, 62, 40, 2, 1.12))]
+        self.top = BAND_T + max(heights) + 20
         super().__init__(self.end_t + (read_secs(final) + 0.7 if final else 0.9))
+
+    def _hook(self, d, t):
+        c = self.c
+        mid = int(H * 0.47)
+        d.rectangle([0, 0, W, mid], fill=c["pa"])
+        d.rectangle([0, mid, W, H], fill=c["pb"])
+        d.rectangle([0, mid - 4, W, mid + 4], fill=c["txt"])
+        sizes = [min(190, 200 * INNER / _M.textlength(ln, font=F("head", 200))) for ln in self.hook]
+        room = mid - BAND_T - 60
+        for _ in range(3):
+            hs = [_M.textbbox((0, 0), ln, font=F("head", sz)) for ln, sz in zip(self.hook, sizes)]
+            tot = sum(b[3] - b[1] for b in hs) + 26 * (len(hs) - 1)
+            if tot > room: sizes = [sz * room / tot for sz in sizes]
+        y = mid - 46 - tot
+        for k, ln in enumerate(self.hook):
+            p = ease_out(prog(t, k * 0.08, 0.16))
+            f = F("head", sizes[k] * (0.9 + 0.1 * p))
+            b = d.textbbox((0, 0), ln, font=f)
+            d.text((SAFE - b[0], y - b[1]), ln, font=f, fill=c["txt"])
+            y += (hs[k][3] - hs[k][1]) + 26
+        f, rows = fit(self.sub, "bold", INNER, 58, 40, 3, 1.22)
+        y = mid + 50
+        for ln in rows:
+            d.text((SAFE, y), ln, font=f, fill=c["soft"]); y += f.size * 1.22
 
     def frame(self, i, n):
         t = i / FPS
-        img = Image.new("RGB", (W, H), self.BG)
+        c = self.c
+        img = Image.new("RGB", (W, H), c["bg"])
         d = ImageDraw.Draw(img)
         if t < self.hook_s:
-            mid = int(H * 0.47)
-            d.rectangle([0, 0, W, mid], fill=self.PA)
-            d.rectangle([0, mid, W, H], fill=self.PB)
-            d.rectangle([0, mid - 4, W, mid + 4], fill=self.TXT)
-            sizes = [min(190, 200 * INNER / _M.textlength(ln, font=F("head", 200))) for ln in self.hook]
-            room = mid - BAND_T - 60
-            for _ in range(3):
-                hs = [_M.textbbox((0, 0), ln, font=F("head", sz)) for ln, sz in zip(self.hook, sizes)]
-                tot = sum(b[3] - b[1] for b in hs) + 26 * (len(hs) - 1)
-                if tot > room: sizes = [sz * room / tot for sz in sizes]
-            y = mid - 46 - tot
-            for k, ln in enumerate(self.hook):
-                p = ease_out(prog(t, k * 0.08, 0.16))
-                f = F("head", sizes[k] * (0.9 + 0.1 * p))
-                b = d.textbbox((0, 0), ln, font=f)
-                d.text((SAFE - b[0], y - b[1]), ln, font=f, fill=self.TXT)
-                y += (hs[k][3] - hs[k][1]) + 26
-            f, rows = fit(self.sub, "bold", INNER, 58, 40, 3, 1.22)
-            y = mid + 50
-            for ln in rows:
-                d.text((SAFE, y), ln, font=f, fill=(214, 240, 222)); y += f.size * 1.22
+            self._hook(d, t)
             return img
 
         closing = self.final and t >= self.end_t
@@ -573,22 +659,35 @@ class VersusScene(Scene):
         f, rows = fit(head, "head" if closing else "num", INNER, 62 if closing else 56, 40, 2, 1.12)
         y = BAND_T
         for ln in rows:
-            d.text((SAFE, y), ln, font=f, fill=self.GRN if closing else self.TXT); y += f.size * 1.12
-        # the panels keep one position whether the heading above is the title
-        # or the two-line closing statement — otherwise every row jumps and
-        # shrinks at the moment it should be landing
-        heights = [len(r) * ff.size * 1.12 for ff, r in (
-            fit(self.title, "num", INNER, 56, 40, 2, 1.12),
-            fit(self.final or self.title, "head", INNER, 62, 40, 2, 1.12))]
-        top = BAND_T + max(heights) + 20
+            d.text((SAFE, y), ln, font=f, fill=c["grn"] if closing else c["txt"]); y += f.size * 1.12
+        wordmark(d, c["mark"])
+        top = self.top
         ph = (BAND_B - top - 18) / 2
+        sides = ((self.la, self.ra, self.ta, c["pa"], c["red"]), (self.lb, self.rb, self.tb, c["pb"], c["grn"]))
+
+        if self.mode == "duel":
+            cur = max([k for k, s in enumerate(self.ta) if s <= t] or [0])
+            for col, (label, rows_, times, panel, tone) in enumerate(sides):
+                py = top + col * (ph + 18)
+                d.rounded_rectangle([SAFE - 20, py, W - SAFE + 20, py + ph], radius=26, fill=panel,
+                                    outline=tone if (col == 1 and closing) else None, width=6)
+                d.text((SAFE + 6, py + 14), label, font=F("num", 50), fill=tone)
+                cnt = f"{cur + 1} / {len(rows_)}"
+                d.text((W - SAFE - 6 - _M.textlength(cnt, font=F("num", 44)), py + 18), cnt, font=F("num", 44),
+                       fill=mix(panel, tone, 0.6))
+                if cur < len(rows_) and t >= times[cur]:
+                    p = ease_out(prog(t, times[cur], 0.2))
+                    fr, lines = fit(rows_[cur], "head", INNER - 30, 96, 52, 3, 1.12, ph - 120)
+                    ty = py + 84 + (ph - 100 - len(lines) * fr.size * 1.12) / 2
+                    for ln in lines:
+                        d.text((SAFE + 6 + (1 - p) * (-60 if col == 0 else 60), ty), ln, font=fr,
+                               fill=mix(panel, c["txt"], p)); ty += fr.size * 1.12
+            return img
+
         nrow = max(len(self.ra), len(self.rb))
         rh = (ph - 78) / nrow
         size = int(min(54, rh * 0.40))
-        wordmark(d, (70, 76, 80))
-        for col, (label, rows_, times, panel, tone) in enumerate((
-                (self.la, self.ra, self.ta, self.PA, self.RED),
-                (self.lb, self.rb, self.tb, self.PB, self.GRN))):
+        for col, (label, rows_, times, panel, tone) in enumerate(sides):
             py = top + col * (ph + 18)
             d.rounded_rectangle([SAFE - 20, py, W - SAFE + 20, py + ph], radius=26, fill=panel,
                                 outline=tone if (col == 1 and closing) else None, width=6)
@@ -606,101 +705,122 @@ class VersusScene(Scene):
                 fr, lines = fit(txt, "bold", INNER - s - 40, size, 30, 2, 1.16)
                 ty = ry + (rh - len(lines) * fr.size * 1.16) / 2
                 for ln in lines:
-                    d.text((x + s + 24, ty), ln, font=fr, fill=mix(panel, self.TXT, p)); ty += fr.size * 1.16
+                    d.text((x + s + 24, ty), ln, font=fr, fill=mix(panel, c["txt"], p)); ty += fr.size * 1.16
         return img
 
 
 # ════════════════════════════════════════════════════════════ blueprint ═════
-NAVY, GRIDC, LINE, CYAN, PANEL = (13, 36, 64), (26, 58, 96), (232, 244, 255), (118, 204, 255), (17, 48, 84)
-HOT = (255, 190, 92)
+def _skin(bg, grid, line, accent, panel, hot):
+    return dict(bg=bg, grid=grid, line=line, accent=accent, panel=panel, hot=hot,
+                fab=mix(panel, line, .24), knit=mix(panel, line, .45), dim=mix(panel, line, .62),
+                mute=mix(panel, line, .38), edge=mix(bg, line, .35), mark=mix(bg, line, .30))
+
+
+# Four drafting sheets. Same drawings, different room: a blueprint, a night
+# desk, a white technical sheet and a chalkboard.
+BLUE_SKINS = {
+    "blueprint": _skin((13, 36, 64), (26, 58, 96), (232, 244, 255), (118, 204, 255), (17, 48, 84), (255, 190, 92)),
+    "night":     _skin((16, 16, 18), (34, 34, 38), (240, 236, 226), (236, 164, 52), (26, 26, 30), (120, 226, 150)),
+    "sheet":     _skin((244, 241, 232), (218, 226, 234), (22, 40, 84), (28, 92, 204), (252, 250, 244), (226, 84, 60)),
+    "chalk":     _skin((18, 54, 42), (30, 74, 58), (238, 246, 238), (255, 214, 110), (24, 66, 52), (255, 150, 120)),
+}
+K = BLUE_SKINS["blueprint"]            # the sheet being drawn on right now
+NAVY, LINE, CYAN = K["bg"], K["line"], K["accent"]      # kept for the close card
 
 
 class BlueprintScene(Scene):
     """A drafting sheet: a drawing in the upper box, the note for the current
     step underneath. `diagram(d, w, h, k, p)` draws the state for step k."""
-    _bg = None
+    _bgs = {}
     BOX_H = 590
 
-    def __init__(self, hook, sub, title, steps, diagram, hook_s=2.1):
+    def __init__(self, hook, sub, title, steps, diagram, hook_s=2.1, skin="blueprint", pace=1.0):
         self.hook, self.sub, self.title, self.steps, self.diagram, self.hook_s = hook, sub, title, steps, diagram, hook_s
+        self.skin = skin
         t, self.starts = hook_s, []
         for key, detail in steps:
-            self.starts.append(t); t += read_secs(key + " " + detail) + 0.45
+            self.starts.append(t); t += (read_secs(key + " " + detail) + 0.45) * pace
         self.marks = list(self.starts)
         super().__init__(t + 0.5)
 
-    @classmethod
-    def bg(cls):
-        if cls._bg is None:
-            img = Image.new("RGB", (W, H), NAVY)
+    def bg(self):
+        if self.skin not in self._bgs:
+            c = BLUE_SKINS[self.skin]
+            img = Image.new("RGB", (W, H), c["bg"])
             d = ImageDraw.Draw(img)
             for x in range(0, W, 60):
-                d.line([x, 0, x, H], fill=GRIDC, width=3 if x % 300 == 0 else 1)
+                d.line([x, 0, x, H], fill=c["grid"], width=3 if x % 300 == 0 else 1)
             for y in range(0, H, 60):
-                d.line([0, y, W, y], fill=GRIDC, width=3 if y % 300 == 0 else 1)
-            cls._bg = img
-        return cls._bg.copy()
+                d.line([0, y, W, y], fill=c["grid"], width=3 if y % 300 == 0 else 1)
+            self._bgs[self.skin] = img
+        return self._bgs[self.skin].copy()
 
     def frame(self, i, n):
+        global K
+        K = c = BLUE_SKINS[self.skin]
         t = i / FPS
         img = self.bg()
         d = ImageDraw.Draw(img)
+        wordmark(d, c["mark"])
         if t < self.hook_s:
             f, rows = fit(self.hook, "num", INNER, 170, 90, 5, 1.02)
             y = BAND_T + 70
             p0 = ease_out(prog(t, 0, 0.3))
-            d.line([SAFE, y - 34, SAFE + INNER * p0, y - 34], fill=CYAN, width=4)
-            d.line([SAFE, y - 50, SAFE, y - 18], fill=CYAN, width=4)
-            if p0 >= 1: d.line([W - SAFE, y - 50, W - SAFE, y - 18], fill=CYAN, width=4)
+            d.line([SAFE, y - 34, SAFE + INNER * p0, y - 34], fill=c["accent"], width=4)
+            d.line([SAFE, y - 50, SAFE, y - 18], fill=c["accent"], width=4)
+            if p0 >= 1: d.line([W - SAFE, y - 50, W - SAFE, y - 18], fill=c["accent"], width=4)
             for k, ln in enumerate(rows):
                 p = ease_out(prog(t, k * 0.07, 0.18))
-                d.text((SAFE + (1 - p) * 30, y), ln, font=f, fill=LINE); y += f.size * 1.02
+                d.text((SAFE + (1 - p) * 30, y), ln, font=f, fill=c["line"]); y += f.size * 1.02
             fs, srows = fit(self.sub, "med", INNER, 50, 38, 3, 1.25)
             y += 64
             for ln in srows:
-                d.text((SAFE, y), ln, font=fs, fill=CYAN); y += fs.size * 1.25
-            wordmark(d, (74, 112, 152))
+                d.text((SAFE, y), ln, font=fs, fill=c["accent"]); y += fs.size * 1.25
             return img
 
-        wordmark(d, (74, 112, 152))
         cur = max(k for k, s in enumerate(self.starts) if s <= t)
         p = prog(t, self.starts[cur], 0.6)
-        d.text((SAFE, BAND_T), self.title, font=F("num", 46), fill=CYAN)
+        ft, _ = fit(self.title, "num", INNER - 130, 46, 30, 1)
+        d.text((SAFE, BAND_T + (46 - ft.size) / 2), self.title, font=ft, fill=c["accent"])
         cnt = f"{cur + 1} / {len(self.steps)}"
-        d.text((W - SAFE - _M.textlength(cnt, font=F("num", 46)), BAND_T), cnt, font=F("num", 46), fill=(150, 176, 204))
-        d.line([SAFE, BAND_T + 64, W - SAFE, BAND_T + 64], fill=CYAN, width=3)
+        d.text((W - SAFE - _M.textlength(cnt, font=F("num", 46)), BAND_T), cnt, font=F("num", 46), fill=mix(c["bg"], c["line"], .6))
+        d.line([SAFE, BAND_T + 64, W - SAFE, BAND_T + 64], fill=c["accent"], width=3)
 
         # the drawing, at twice the size and scaled down, so its lines are clean
         bx, by, bw, bh = SAFE - 20, BAND_T + 86, INNER + 40, self.BOX_H
-        sub = Image.new("RGB", (bw * 2, bh * 2), PANEL)
+        sub = Image.new("RGB", (bw * 2, bh * 2), c["panel"])
         self.diagram(ImageDraw.Draw(sub), bw * 2, bh * 2, cur, ease_out(p))
         img.paste(sub.resize((bw, bh), Image.LANCZOS), (bx, by))
-        d.rectangle([bx, by, bx + bw, by + bh], outline=(60, 104, 150), width=3)
+        d.rectangle([bx, by, bx + bw, by + bh], outline=c["edge"], width=3)
 
         key, detail = self.steps[cur]
         q = ease_out(prog(t, self.starts[cur], 0.22))
         y = by + bh + 26 + (1 - q) * 20
-        d.ellipse([SAFE, y + 4, SAFE + 72, y + 76], fill=CYAN)
+        d.ellipse([SAFE, y + 4, SAFE + 72, y + 76], fill=c["accent"])
         num = str(cur + 1)
-        d.text((SAFE + 36 - _M.textlength(num, font=F("num", 50)) / 2, y + 11), num, font=F("num", 50), fill=NAVY)
+        d.text((SAFE + 36 - _M.textlength(num, font=F("num", 50)) / 2, y + 11), num, font=F("num", 50), fill=c["bg"])
         fk, _ = fit(key, "head", INNER - 100, 72, 44, 1)
-        d.text((SAFE + 96, y + (76 - fk.size) / 2 - 4), key, font=fk, fill=CYAN)
+        d.text((SAFE + 96, y + (76 - fk.size) / 2 - 4), key, font=fk, fill=c["accent"])
         fd, rows = fit(detail, "med", INNER, 56, 38, 3, 1.22, BAND_B + 30 - (y + 98))
         yy = y + 98
         for ln in rows:
-            d.text((SAFE, yy), ln, font=fd, fill=LINE); yy += fd.size * 1.22
+            d.text((SAFE, yy), ln, font=fd, fill=c["line"]); yy += fd.size * 1.22
         return img
 
 
-def _dot(d, cx, cy, n, active, p, t_pulse=0.0):
+def _centre(d, text, y, w, size, fill):
+    f = F("num", size)
+    d.text((w / 2 - _M.textlength(text, font=f) / 2, y), text, font=f, fill=fill)
+
+
+def _dot(d, cx, cy, n, active, p):
     r = 40
     if active:
         rr = r + 14 + 26 * p
-        d.ellipse([cx - rr, cy - rr, cx + rr, cy + rr], outline=HOT, width=6)
-    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=HOT if active else (86, 132, 176))
-    s = str(n)
-    f = F("num", 54)
-    d.text((cx - _M.textlength(s, font=f) / 2, cy - 33), s, font=f, fill=NAVY)
+        d.ellipse([cx - rr, cy - rr, cx + rr, cy + rr], outline=K["hot"], width=6)
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=K["hot"] if active else K["mute"])
+    s, f = str(n), F("num", 54)
+    d.text((cx - _M.textlength(s, font=f) / 2, cy - 33), s, font=f, fill=K["panel"])
 
 
 def jersey_outline(long=False):
@@ -711,18 +831,16 @@ def jersey_outline(long=False):
             (.73, .31), (.88, .41), (.97, .27), (.76, .09), (.60, .04), (.50, .13)]
 
 
-def jersey_diagram(anchors, long=False, highlight=None):
-    """A shirt with numbered points lighting up one step at a time.
-    `highlight(d, P, k)` may draw extra marks for step k."""
+def jersey_diagram(anchors, long=False):
+    """A shirt with numbered points lighting up one step at a time."""
     def fn(d, w, h, k, p):
         jh = h * 0.88
         jw = jh * (1.0 if long else 0.94)
         x0, y0 = (w - jw) / 2, h * 0.06
         P = lambda u, v: (x0 + u * jw, y0 + v * jh)
         pts = [P(u, v) for u, v in jersey_outline(long)]
-        d.line(pts + [pts[0]], fill=LINE, width=9, joint="curve")
-        d.line([P(.27, .92), P(.73, .92)], fill=(120, 160, 200), width=4)       # hem stitch
-        if highlight: highlight(d, P, k, p)
+        d.line(pts + [pts[0]], fill=K["line"], width=9, joint="curve")
+        d.line([P(.27, .92), P(.73, .92)], fill=K["dim"], width=4)             # hem stitch
         for j, (u, v) in enumerate(anchors[:k + 1]):
             cx, cy = P(u, v)
             _dot(d, cx, cy, j + 1, j == k, p)
@@ -733,97 +851,242 @@ def layers_diagram():
     """Fabric in cross-section, and where each decoration method puts its mark."""
     def fn(d, w, h, k, p):
         fx0, fx1, fy0, fy1 = w * .10, w * .90, h * .50, h * .74
-        d.rounded_rectangle([fx0, fy0, fx1, fy1], radius=18, fill=(46, 88, 132), outline=LINE, width=6)
+        d.rounded_rectangle([fx0, fy0, fx1, fy1], radius=18, fill=K["fab"], outline=K["line"], width=6)
         for x in range(int(fx0) + 40, int(fx1) - 20, 46):                      # the knit
-            d.line([x, fy0 + 22, x, fy1 - 22], fill=(84, 128, 172), width=5)
-        d.text((fx0, fy1 + 26), "FABRIC, IN CROSS-SECTION", font=F("num", 52), fill=(150, 176, 204))
+            d.line([x, fy0 + 22, x, fy1 - 22], fill=K["knit"], width=5)
+        d.text((fx0, fy1 + 26), "FABRIC, IN CROSS-SECTION", font=F("num", 52), fill=K["dim"])
         a, b = w * .28, w * .28 + (w * .44) * p
+        hot = K["hot"]
         if k == 0:        # ink inside the fibre
-            d.rectangle([a, fy0 + 10, b, fy1 - 10], fill=HOT)
+            d.rectangle([a, fy0 + 10, b, fy1 - 10], fill=hot)
             for x in range(int(a) + 22, int(b), 46):
-                d.line([x, fy0 + 22, x, fy1 - 22], fill=(196, 132, 40), width=5)
+                d.line([x, fy0 + 22, x, fy1 - 22], fill=mix(hot, (0, 0, 0), .25), width=5)
         elif k == 1:      # thread on top, stitched through
             x = a
             while x < b - 20:
-                d.ellipse([x, fy0 - 62, x + 64, fy0 + 30], fill=HOT, outline=NAVY, width=4)
-                d.line([x + 32, fy0, x + 32, fy1 - 14], fill=HOT, width=7)
+                d.ellipse([x, fy0 - 62, x + 64, fy0 + 30], fill=hot, outline=K["panel"], width=4)
+                d.line([x + 32, fy0, x + 32, fy1 - 14], fill=hot, width=7)
                 x += 66
         elif k == 2:      # a thin film, bonded on
-            d.rectangle([a, fy0 - 26, b, fy0], fill=HOT)
+            d.rectangle([a, fy0 - 26, b, fy0], fill=hot)
         else:             # ink sitting on the surface
-            d.rounded_rectangle([a, fy0 - 54, max(a + 40, b), fy0], radius=26, fill=HOT)
+            d.rounded_rectangle([a, fy0 - 54, max(a + 40, b), fy0], radius=26, fill=hot)
         names = ["INSIDE THE FIBRE", "RAISED, ON TOP", "A FILM ON TOP", "ON THE SURFACE"]
-        d.line([w * .50, fy0 - 96, w * .50, h * .22], fill=HOT, width=5)
-        tw_ = _M.textlength(names[k], font=F("num", 64))
-        d.text((w * .50 - tw_ / 2, h * .09), names[k], font=F("num", 64), fill=HOT)
+        d.line([w * .50, fy0 - 96, w * .50, h * .22], fill=hot, width=5)
+        _centre(d, names[k], h * .09, w, 64, hot)
     return fn
 
 
 def seam_diagram():
     def fn(d, w, h, k, p):
-        fab, cy = (46, 88, 132), h * .52
+        fab, cy, hot, line = K["fab"], h * .52, K["hot"], K["line"]
         if k == 0:        # flatlock: two edges butted, stitched flat
-            d.rectangle([w * .08, cy - 80, w * .497, cy + 80], fill=fab, outline=LINE, width=8)
-            d.rectangle([w * .503, cy - 80, w * .92, cy + 80], fill=fab, outline=LINE, width=8)
+            d.rectangle([w * .08, cy - 80, w * .497, cy + 80], fill=fab, outline=line, width=8)
+            d.rectangle([w * .503, cy - 80, w * .92, cy + 80], fill=fab, outline=line, width=8)
             xs = [w * .36 + j * (w * .28 / 10) for j in range(int(11 * p) + 1)]
             zz = [(x, cy - 66 if j % 2 == 0 else cy + 66) for j, x in enumerate(xs)]
-            if len(zz) > 1: d.line(zz, fill=HOT, width=14, joint="curve")
-            d.line([w * .08, cy + 150, w * .92, cy + 150], fill=(150, 176, 204), width=6)
+            if len(zz) > 1: d.line(zz, fill=hot, width=14, joint="curve")
+            d.line([w * .08, cy + 150, w * .92, cy + 150], fill=K["dim"], width=6)
             lab, sub_ = "FLATLOCK", "FLAT AGAINST THE SKIN"
         elif k == 1:      # overlock: both layers turned in, a ridge inside
             ridge = 230 * p
             cy -= 110
-            d.rectangle([w * .08, cy - 80, w * .44, cy + 80], fill=fab, outline=LINE, width=8)
-            d.rectangle([w * .56, cy - 80, w * .92, cy + 80], fill=fab, outline=LINE, width=8)
-            d.rectangle([w * .44 - 4, cy - 80, w * .497, cy + 80 + ridge], fill=fab, outline=LINE, width=8)
-            d.rectangle([w * .503, cy - 80, w * .56 + 4, cy + 80 + ridge], fill=fab, outline=LINE, width=8)
+            d.rectangle([w * .08, cy - 80, w * .44, cy + 80], fill=fab, outline=line, width=8)
+            d.rectangle([w * .56, cy - 80, w * .92, cy + 80], fill=fab, outline=line, width=8)
+            d.rectangle([w * .44 - 4, cy - 80, w * .497, cy + 80 + ridge], fill=fab, outline=line, width=8)
+            d.rectangle([w * .503, cy - 80, w * .56 + 4, cy + 80 + ridge], fill=fab, outline=line, width=8)
             for j in range(int(5 * p) + 1):
                 yy = cy + 96 + j * (ridge / 6)
-                d.arc([w * .41, yy, w * .59, yy + 70], 0, 180, fill=HOT, width=14)
+                d.arc([w * .41, yy, w * .59, yy + 70], 0, 180, fill=hot, width=14)
             lab, sub_ = "OVERLOCK", "A RIDGE ON THE INSIDE"
         else:             # where it sits on the shirt
             jh = h * 0.80; jw = jh * 0.94; x0, y0 = (w - jw) / 2, h * 0.16
             P = lambda u, v: (x0 + u * jw, y0 + v * jh)
             pts = [P(u, v) for u, v in jersey_outline()]
-            d.line(pts + [pts[0]], fill=LINE, width=9, joint="curve")
+            d.line(pts + [pts[0]], fill=line, width=9, joint="curve")
             for (a, b) in (((.24, .09), (.40, .04)), ((.76, .09), (.60, .04)),
                            ((.27, .31), (.27, .97)), ((.73, .31), (.73, .97))):
                 A, B = P(*a), P(*b)
-                d.line([A, (A[0] + (B[0] - A[0]) * p, A[1] + (B[1] - A[1]) * p)], fill=HOT, width=16)
+                d.line([A, (A[0] + (B[0] - A[0]) * p, A[1] + (B[1] - A[1]) * p)], fill=hot, width=16)
             lab, sub_ = ("SHOULDERS AND SIDES", "") if k == 2 else ("WRITE IT DOWN", "")
-        f = F("num", 70)
-        d.text((w / 2 - _M.textlength(lab, font=f) / 2, h * .06), lab, font=f, fill=HOT)
+        _centre(d, lab, h * .06, w, 70, hot)
         if sub_:
-            f2 = F("num", 50)
-            d.text((w / 2 - _M.textlength(sub_, font=f2) / 2, h * .86), sub_, font=f2, fill=(150, 176, 204))
+            _centre(d, sub_, h * .86, w, 50, K["dim"])
     return fn
 
 
 def flow_diagram(nodes):
     """A chain of stages, top to bottom; the current one is lit."""
     def fn(d, w, h, k, p):
-        n = len(nodes)
-        gap = 34
+        n, gap = len(nodes), 34
         nh = (h * .90 - gap * (n - 1)) / n
         y = h * .05
         for j, name in enumerate(nodes):
             x0, x1 = w * .10, w * .90
             if j == k:
-                d.rounded_rectangle([x0, y, x1, y + nh], radius=22, fill=mix(PANEL, HOT, p), outline=HOT, width=6)
-                col = NAVY
+                d.rounded_rectangle([x0, y, x1, y + nh], radius=22, fill=mix(K["panel"], K["hot"], p), outline=K["hot"], width=6)
+                col = K["panel"]
             elif j < k:
-                d.rounded_rectangle([x0, y, x1, y + nh], radius=22, fill=(40, 82, 126), outline=LINE, width=5)
-                col = LINE
+                d.rounded_rectangle([x0, y, x1, y + nh], radius=22, fill=K["fab"], outline=K["line"], width=5)
+                col = K["line"]
             else:
-                d.rounded_rectangle([x0, y, x1, y + nh], radius=22, outline=(66, 108, 152), width=4)
-                col = (96, 136, 178)
+                d.rounded_rectangle([x0, y, x1, y + nh], radius=22, outline=K["mute"], width=4)
+                col = K["mute"]
             f = F("num", min(70, nh * .50))
-            lab = f"{j + 1}   {name}"
-            d.text((x0 + 44, y + (nh - f.size) / 2 - 6), lab, font=f, fill=col)
+            d.text((x0 + 44, y + (nh - f.size) / 2 - 6), f"{j + 1}   {name}", font=f, fill=col)
             if j < n - 1:
-                ax = w * .5
-                d.line([ax, y + nh + 4, ax, y + nh + gap - 4], fill=LINE if j < k else (66, 108, 152), width=6)
+                d.line([w * .5, y + nh + 4, w * .5, y + nh + gap - 4], fill=K["line"] if j < k else K["mute"], width=6)
             y += nh + gap
+    return fn
+
+
+def bars_diagram(labels, note="ORDER, NOT SCALE"):
+    """A ranking: the longest bar first. The lengths show order only, and the
+    drawing says so — there is no measured number behind them."""
+    def fn(d, w, h, k, p):
+        n, gap = len(labels), 26
+        bh = (h * .82 - gap * (n - 1)) / n
+        y = h * .05
+        for j, name in enumerate(labels):
+            full = w * (.80 - .085 * j)
+            if j <= k:
+                wd = full * (p if j == k else 1.0)
+                d.rounded_rectangle([w * .08, y, w * .08 + max(wd, 30), y + bh], radius=14,
+                                    fill=K["hot"] if j == k else K["fab"], outline=None if j == k else K["line"], width=4)
+                f = F("num", min(64, bh * .52))
+                d.text((w * .08 + 30, y + (bh - f.size) / 2 - 6), f"{j + 1}  {name}", font=f,
+                       fill=K["panel"] if j == k else K["line"])
+            else:
+                d.rounded_rectangle([w * .08, y, w * .08 + full, y + bh], radius=14, outline=K["mute"], width=3)
+            y += bh + gap
+        d.text((w * .08, h * .91), note, font=F("num", 44), fill=K["dim"])
+    return fn
+
+
+def checklist_diagram(labels):
+    """Rows that get ticked as the reel goes."""
+    def fn(d, w, h, k, p):
+        n, gap = len(labels), 18
+        rh = (h * .92 - gap * (n - 1)) / n
+        y = h * .04
+        for j, name in enumerate(labels):
+            s = rh * .62
+            bx, bycc = w * .08, y + (rh - s) / 2
+            col = K["hot"] if j == k else K["line"] if j < k else K["mute"]
+            d.rounded_rectangle([bx, bycc, bx + s, bycc + s], radius=10, outline=col, width=6)
+            if j < k: tick_mark(d, bx, bycc, s, 1.0, K["hot"], 10)
+            elif j == k: tick_mark(d, bx, bycc, s, p, K["hot"], 10)
+            f = F("num", min(66, rh * .56))
+            d.text((bx + s + 36, y + (rh - f.size) / 2 - 6), name, font=f, fill=col)
+            y += rh + gap
+    return fn
+
+
+def flags_diagram(labels):
+    """Warning signs, lit one at a time."""
+    def fn(d, w, h, k, p):
+        n = len(labels)
+        cw = w * .84 / n
+        for j, name in enumerate(labels):
+            cx, top, s = w * .08 + cw * (j + .5), h * .16, min(cw * .78, h * .52)
+            lit = j <= k
+            col = K["hot"] if j == k else K["line"] if j < k else K["mute"]
+            tri = [(cx, top), (cx - s / 2, top + s * .9), (cx + s / 2, top + s * .9)]
+            if j == k:
+                d.polygon(tri, fill=mix(K["panel"], K["hot"], p))
+            d.line(tri + [tri[0]], fill=col, width=10, joint="curve")
+            f = F("num", s * .46)
+            mk = "!" if lit else str(j + 1)
+            d.text((cx - _M.textlength(mk, font=f) / 2, top + s * .30), mk, font=f,
+                   fill=K["panel"] if j == k else col)
+            fl = F("num", min(54, cw * .19))
+            d.text((cx - _M.textlength(name, font=fl) / 2, top + s * .9 + 40), name, font=fl, fill=col)
+    return fn
+
+
+def swatch_diagram(kinds):
+    """A square of each fabric, drawn as its structure."""
+    def fn(d, w, h, k, p):
+        kind = kinds[k]
+        s = h * .74
+        x0, y0 = (w - s) / 2, h * .06
+        line, hot = K["line"], K["hot"]
+        d.rectangle([x0, y0, x0 + s, y0 + s], fill=K["fab"], outline=line, width=8)
+        step = s / 12
+        if kind == "interlock":            # dense, both directions
+            for j in range(-11, 12):
+                o = j * step
+                d.line([x0 + max(0, o), y0 + max(0, -o), x0 + min(s, s + o), y0 + min(s, s - o)], fill=K["knit"], width=5)
+                d.line([x0 + min(s, s + o), y0 + max(0, o), x0 + max(0, o), y0 + min(s, s + o)], fill=K["knit"], width=5)
+        elif kind == "jersey":             # columns of V stitches
+            for cx in range(12):
+                for cy in range(12):
+                    ax, ay = x0 + cx * step, y0 + cy * step
+                    d.line([ax + step * .15, ay + step * .1, ax + step * .5, ay + step * .85, ax + step * .85, ay + step * .1], fill=K["knit"], width=5)
+        elif kind == "pique":              # waffle
+            for cx in range(8):
+                for cy in range(8):
+                    ax = x0 + cx * s / 8 + (s / 16 if cy % 2 else 0)
+                    ay = y0 + cy * s / 8
+                    if ax + s / 10 <= x0 + s:
+                        d.rectangle([ax + 8, ay + 8, ax + s / 10, ay + s / 10], outline=K["knit"], width=6)
+        elif kind == "mesh":               # holes
+            for cx in range(9):
+                for cy in range(9):
+                    ax, ay = x0 + (cx + .5) * s / 9, y0 + (cy + .5) * s / 9
+                    r = s / 34
+                    d.ellipse([ax - r, ay - r, ax + r, ay + r], fill=K["panel"], outline=K["knit"], width=4)
+        elif kind == "jacquard":           # a motif knitted in
+            for cx in range(5):
+                for cy in range(5):
+                    ax, ay, r = x0 + (cx + .5) * s / 5, y0 + (cy + .5) * s / 5, s / 14
+                    d.polygon([(ax, ay - r), (ax + r, ay), (ax, ay + r), (ax - r, ay)],
+                              fill=hot if (cx + cy) % 2 == 0 else K["knit"])
+        else:                              # recovery: pulled out, and back
+            d.rectangle([x0, y0, x0 + s, y0 + s], fill=K["panel"])
+            pull = math.sin(min(1.0, p * 1.6) * math.pi) * s * .16
+            d.rectangle([x0 - pull, y0 + s * .3, x0 + s + pull, y0 + s * .7], fill=K["fab"], outline=line, width=8)
+            for sx in (-1, 1):
+                ax = w / 2 + sx * (s / 2 + pull + 50)
+                d.line([ax, y0 + s * .5, ax + sx * 90, y0 + s * .5], fill=hot, width=10)
+                d.polygon([(ax + sx * 120, y0 + s * .5), (ax + sx * 84, y0 + s * .5 - 26), (ax + sx * 84, y0 + s * .5 + 26)], fill=hot)
+        if kind != "recovery":
+            d.rectangle([x0, y0, x0 + s, y0 + s], outline=line, width=8)
+        _centre(d, f"{k + 1} OF {len(kinds)}", h * .88, w, 48, K["dim"])
+    return fn
+
+
+def press_diagram():
+    """Sublimation: a printed paper on blank polyester, heat, and the ink
+    moving from one into the other."""
+    def fn(d, w, h, k, p):
+        line, hot = K["line"], K["hot"]
+        fx0, fx1 = w * .12, w * .88
+        fab_t, fab_b = h * .56, h * .80
+        grey = mix(K["panel"], line, .5)
+        # the fabric
+        inked = 0.0 if k == 0 else p if k == 1 else 1.0
+        d.rounded_rectangle([fx0, fab_t, fx1, fab_b], radius=14, fill=K["fab"], outline=line, width=6)
+        if inked > 0:
+            d.rectangle([fx0 + 30, fab_t + 12, fx1 - 30, fab_t + 12 + (fab_b - fab_t - 24) * inked], fill=hot)
+        for x in range(int(fx0) + 40, int(fx1) - 20, 46):
+            d.line([x, fab_t + 22, x, fab_b - 22], fill=K["knit"] if inked < .5 else mix(hot, (0, 0, 0), .25), width=5)
+        # the paper
+        lift = 0 if k < 2 else (h * .26 * p if k == 2 else h * .9)
+        py1 = fab_t - 14 - lift
+        py0 = py1 - h * .10
+        if py1 > 0:
+            col = hot if k == 0 else mix(hot, grey, p) if k == 1 else grey
+            d.rectangle([fx0 + 30, py0, fx1 - 30, py1], fill=col, outline=line, width=6)
+        # the heat
+        if k == 1:
+            for j in range(7):
+                x = fx0 + 80 + j * (fx1 - fx0 - 160) / 6
+                d.line([x, h * .16, x, h * .16 + h * .16 * p], fill=hot, width=10)
+                d.polygon([(x, h * .16 + h * .16 * p + 34), (x - 24, h * .16 + h * .16 * p), (x + 24, h * .16 + h * .16 * p)], fill=hot)
+        lab = ["PAPER ON POLYESTER", "200°C · 60 SECONDS", "THE PAPER COMES OFF GREY", "THE COLOUR IS IN THE FIBRE"][k]
+        _centre(d, lab, h * .04, w, 62, hot)
+        d.text((fx0, fab_b + 22), "POLYESTER, IN CROSS-SECTION", font=F("num", 46), fill=K["dim"])
     return fn
 
 
