@@ -1,20 +1,20 @@
-preflight 2026-11-14T21:30:45Z
+preflight 2026-11-15T14:20:31Z
 
-queue      133 items, 124 still to publish
+1 problem(s) would stop a post going out:
+  - shrinkage--business.cover.jpg: HTTP 503
+queue      133 items, 121 still to publish
 cadence    two Instagram reels (12:30, 17:30 UTC) and two LinkedIn posts (11:30, 15:30 UTC) a day; auto-publish with a 24h veto window
 media base https://youssefkarim2.github.io/soccertex-social
 
-schedule   30 days · 2/day instagram, 2/day linkedin · 60 instagram, 64 linkedin · ids unique  OK
-           4 overdue and waiting for the next run
-captions   124 checked, 288–945 chars, inside the limits  OK
+schedule   29 days · 2/day instagram, 2/day linkedin · 60 instagram, 61 linkedin · ids unique  OK
+           3 overdue and waiting for the next run
+captions   121 checked, 288–945 chars, inside the limits  OK
 media      120 distinct URLs to check
-           all 120 reachable, 203 MB in total  OK
 token      reads @soccertex.eg (id 17841417903547798)  OK
 quota      2 of 100 posts used in the last 24h
            cadence needs 2 a day — room for 98 more right now  OK
 lateness   8 posts measured, median 265 min, worst 372 min (buyer-questions--instagram--20261113-1230)
            a post landing over an hour late means the runner is not firing often enough for the slot
 
-preflight clean — every pending post has everything it needs
 
 exit 0
