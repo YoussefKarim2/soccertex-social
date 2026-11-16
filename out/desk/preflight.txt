@@ -1,11 +1,11 @@
-preflight 2026-11-16T12:20:41Z
+preflight 2026-11-16T16:29:00Z
 
 queue      133 items, 117 still to publish
 cadence    two Instagram reels (12:30, 17:30 UTC) and two LinkedIn posts (11:30, 15:30 UTC) a day; auto-publish with a 24h veto window
 media base https://youssefkarim2.github.io/soccertex-social
 
 schedule   28 days · 2/day instagram, 2/day linkedin · 58 instagram, 59 linkedin · ids unique  OK
-           2 overdue and waiting for the next run
+           4 overdue and waiting for the next run
 captions   117 checked, 288–945 chars, inside the limits  OK
 media      120 distinct URLs to check
            all 120 reachable, 204 MB in total  OK
