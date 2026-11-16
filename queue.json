@@ -304,9 +304,10 @@
       "video": "video/sublimation-limits--business.mp4",
       "pillar": "2 Kit School",
       "cover": "video/sublimation-limits--business.cover.jpg",
-      "status": "queued",
+      "status": "missed",
       "veto_until": "2026-11-14T15:30:00+00:00",
-      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy."
+      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy.",
+      "missed_reason": "LinkedIn was not connected when this was due."
     },
     {
       "id": "sewing-line--instagram--20261115-1730",
@@ -355,8 +356,15 @@
       "video": "video/trading-company--social.mp4",
       "pillar": "3 Sourcing Math",
       "cover": "video/trading-company--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-15T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-15T12:30:00+00:00",
+      "result": {
+        "media_id": "18130881026480940",
+        "permalink": "https://www.instagram.com/reel/Df0bJGWslDR/",
+        "published_at": "2026-11-16T22:25:58+0000",
+        "verified": true,
+        "late_minutes": 596
+      }
     },
     {
       "id": "white-kit--linkedin--20261116-1530",
@@ -384,8 +392,15 @@
       "video": "video/embroidery--social.mp4",
       "pillar": "1 Inside the Floor",
       "cover": "video/embroidery--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-15T17:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-15T17:30:00+00:00",
+      "result": {
+        "media_id": "18052115093831550",
+        "permalink": "https://www.instagram.com/reel/Df0bNYmzyaK/",
+        "published_at": "2026-11-16T22:26:36+0000",
+        "verified": true,
+        "late_minutes": 296
+      }
     },
     {
       "id": "price-drivers--linkedin--20261117-1130",
