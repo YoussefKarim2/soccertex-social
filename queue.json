@@ -341,9 +341,10 @@
       "video": "video/season-calendar--business.mp4",
       "pillar": "3 Sourcing Math",
       "cover": "video/season-calendar--business.cover.jpg",
-      "status": "queued",
+      "status": "missed",
       "veto_until": "2026-11-15T11:30:00+00:00",
-      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy."
+      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy.",
+      "missed_reason": "LinkedIn was not connected when this was due."
     },
     {
       "id": "trading-company--instagram--20261116-1230",
