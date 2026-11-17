@@ -378,9 +378,10 @@
       "video": "video/white-kit--business.mp4",
       "pillar": "2 Kit School",
       "cover": "video/white-kit--business.cover.jpg",
-      "status": "queued",
+      "status": "missed",
       "veto_until": "2026-11-15T15:30:00+00:00",
-      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy."
+      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy.",
+      "missed_reason": "LinkedIn was not connected when this was due."
     },
     {
       "id": "embroidery--instagram--20261116-1730",
@@ -429,8 +430,15 @@
       "video": "video/buyer-questions--social.mp4",
       "pillar": "3 Sourcing Math",
       "cover": "video/buyer-questions--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-16T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-16T12:30:00+00:00",
+      "result": {
+        "media_id": "18095704550662500",
+        "permalink": "https://www.instagram.com/reel/Df23iIRSu2U/",
+        "published_at": "2026-11-17T21:12:37+0000",
+        "verified": true,
+        "late_minutes": 522
+      }
     },
     {
       "id": "recovery-test--linkedin--20261117-1530",
@@ -458,8 +466,15 @@
       "video": "video/heat-press--social.mp4",
       "pillar": "1 Inside the Floor",
       "cover": "video/heat-press--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-16T17:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-16T17:30:00+00:00",
+      "result": {
+        "media_id": "18130526690488550",
+        "permalink": "https://www.instagram.com/reel/Df23nj0KKhn/",
+        "published_at": "2026-11-17T21:13:19+0000",
+        "verified": true,
+        "late_minutes": 222
+      }
     },
     {
       "id": "europe-duty--linkedin--20261118-1130",
