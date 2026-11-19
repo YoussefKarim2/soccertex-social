@@ -526,9 +526,10 @@
       "video": "video/factory-questions--business.mp4",
       "pillar": "2 Kit School",
       "cover": "video/factory-questions--business.cover.jpg",
-      "status": "queued",
+      "status": "missed",
       "veto_until": "2026-11-17T15:30:00+00:00",
-      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy."
+      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy.",
+      "missed_reason": "LinkedIn was not connected when this was due."
     },
     {
       "id": "nameset--instagram--20261118-1730",
@@ -577,8 +578,15 @@
       "video": "video/gsm--social.mp4",
       "pillar": "2 Kit School",
       "cover": "video/gsm--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-18T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-18T12:30:00+00:00",
+      "result": {
+        "media_id": "18436819324146076",
+        "permalink": "https://www.instagram.com/reel/Df7-963zmWe/",
+        "published_at": "2026-11-19T20:53:49+0000",
+        "verified": true,
+        "late_minutes": 503
+      }
     },
     {
       "id": "shrinkage--linkedin--20261119-1530",
@@ -606,8 +614,15 @@
       "video": "video/kit-decisions--social.mp4",
       "pillar": "4 Built for Clubs",
       "cover": "video/kit-decisions--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-18T17:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-18T17:30:00+00:00",
+      "result": {
+        "media_id": "18102656822550616",
+        "permalink": "https://www.instagram.com/reel/Df7_DNYuXvF/",
+        "published_at": "2026-11-19T20:54:29+0000",
+        "verified": true,
+        "late_minutes": 203
+      }
     },
     {
       "id": "tech-pack--linkedin--20261120-1130",
