@@ -600,9 +600,10 @@
       "video": "video/shrinkage--business.mp4",
       "pillar": "2 Kit School",
       "cover": "video/shrinkage--business.cover.jpg",
-      "status": "queued",
+      "status": "missed",
       "veto_until": "2026-11-18T15:30:00+00:00",
-      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy."
+      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy.",
+      "missed_reason": "LinkedIn was not connected when this was due."
     },
     {
       "id": "kit-decisions--instagram--20261119-1730",
@@ -651,8 +652,15 @@
       "video": "video/fabric-glossary--social.mp4",
       "pillar": "2 Kit School",
       "cover": "video/fabric-glossary--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-19T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-19T12:30:00+00:00",
+      "result": {
+        "media_id": "17909039037606080",
+        "permalink": "https://www.instagram.com/reel/Df-iCV1B7tm/",
+        "published_at": "2026-11-20T20:38:41+0000",
+        "verified": true,
+        "late_minutes": 488
+      }
     },
     {
       "id": "quality--linkedin--20261120-1530",
@@ -680,8 +688,15 @@
       "video": "video/goalkeeper--social.mp4",
       "pillar": "4 Built for Clubs",
       "cover": "video/goalkeeper--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-19T17:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-19T17:30:00+00:00",
+      "result": {
+        "media_id": "18191290060416717",
+        "permalink": "https://www.instagram.com/reel/Df-iJecx6UZ/",
+        "published_at": "2026-11-20T20:39:37+0000",
+        "verified": true,
+        "late_minutes": 188
+      }
     },
     {
       "id": "wrong-supplier--linkedin--20261121-1130",
