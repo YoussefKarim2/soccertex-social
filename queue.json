@@ -674,9 +674,10 @@
       "video": "video/quality--business.mp4",
       "pillar": "3 Sourcing Math",
       "cover": "video/quality--business.cover.jpg",
-      "status": "queued",
+      "status": "missed",
       "veto_until": "2026-11-19T15:30:00+00:00",
-      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy."
+      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy.",
+      "missed_reason": "LinkedIn was not connected when this was due."
     },
     {
       "id": "goalkeeper--instagram--20261120-1730",
@@ -725,8 +726,15 @@
       "video": "video/cheap-vs-good--social.mp4",
       "pillar": "2 Kit School",
       "cover": "video/cheap-vs-good--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-20T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-20T12:30:00+00:00",
+      "result": {
+        "media_id": "17917402659558769",
+        "permalink": "https://www.instagram.com/reel/DgA_4nFh_J4/",
+        "published_at": "2026-11-21T19:38:00+0000",
+        "verified": true,
+        "late_minutes": 427
+      }
     },
     {
       "id": "cutting--linkedin--20261121-1530",
@@ -754,8 +762,15 @@
       "video": "video/reorder--social.mp4",
       "pillar": "4 Built for Clubs",
       "cover": "video/reorder--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-20T17:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-20T17:30:00+00:00",
+      "result": {
+        "media_id": "18104839088381780",
+        "permalink": "https://www.instagram.com/reel/DgA_9iHSFUS/",
+        "published_at": "2026-11-21T19:38:39+0000",
+        "verified": true,
+        "late_minutes": 127
+      }
     },
     {
       "id": "small-orders--linkedin--20261122-1130",
