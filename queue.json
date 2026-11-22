@@ -748,9 +748,10 @@
       "video": "video/cutting--business.mp4",
       "pillar": "1 Inside the Floor",
       "cover": "video/cutting--business.cover.jpg",
-      "status": "queued",
+      "status": "missed",
       "veto_until": "2026-11-20T15:30:00+00:00",
-      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy."
+      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy.",
+      "missed_reason": "LinkedIn was not connected when this was due."
     },
     {
       "id": "reorder--instagram--20261121-1730",
@@ -799,8 +800,15 @@
       "video": "video/seams--social.mp4",
       "pillar": "2 Kit School",
       "cover": "video/seams--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-21T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-21T12:30:00+00:00",
+      "result": {
+        "media_id": "17869121544679620",
+        "permalink": "https://www.instagram.com/reel/DgDmpBVsLe9/",
+        "published_at": "2026-11-22T19:55:07+0000",
+        "verified": true,
+        "late_minutes": 445
+      }
     },
     {
       "id": "sewing-line--linkedin--20261122-1530",
@@ -828,8 +836,15 @@
       "video": "video/packing--social.mp4",
       "pillar": "1 Inside the Floor",
       "cover": "video/packing--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-21T17:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-21T17:30:00+00:00",
+      "result": {
+        "media_id": "18078598940764639",
+        "permalink": "https://www.instagram.com/reel/DgDmtjthr9O/",
+        "published_at": "2026-11-22T19:55:41+0000",
+        "verified": true,
+        "late_minutes": 145
+      }
     },
     {
       "id": "trading-company--linkedin--20261123-1130",
