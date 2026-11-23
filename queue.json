@@ -785,9 +785,10 @@
       "video": "video/small-orders--business.mp4",
       "pillar": "3 Sourcing Math",
       "cover": "video/small-orders--business.cover.jpg",
-      "status": "queued",
+      "status": "missed",
       "veto_until": "2026-11-21T11:30:00+00:00",
-      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy."
+      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy.",
+      "missed_reason": "LinkedIn was not connected when this was due."
     },
     {
       "id": "seams--instagram--20261122-1230",
@@ -872,8 +873,15 @@
       "video": "video/sublimation-limits--social.mp4",
       "pillar": "2 Kit School",
       "cover": "video/sublimation-limits--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-22T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-22T12:30:00+00:00",
+      "result": {
+        "media_id": "18120832046088443",
+        "permalink": "https://www.instagram.com/reel/DgFfHG8zrKF/",
+        "published_at": "2026-11-23T13:27:49+0000",
+        "verified": true,
+        "late_minutes": 57
+      }
     },
     {
       "id": "embroidery--linkedin--20261123-1530",
