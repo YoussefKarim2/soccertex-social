@@ -859,9 +859,10 @@
       "video": "video/trading-company--business.mp4",
       "pillar": "3 Sourcing Math",
       "cover": "video/trading-company--business.cover.jpg",
-      "status": "queued",
+      "status": "missed",
       "veto_until": "2026-11-22T11:30:00+00:00",
-      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy."
+      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy.",
+      "missed_reason": "LinkedIn was not connected when this was due."
     },
     {
       "id": "sublimation-limits--instagram--20261123-1230",
@@ -946,8 +947,15 @@
       "video": "video/white-kit--social.mp4",
       "pillar": "2 Kit School",
       "cover": "video/white-kit--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-23T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-23T12:30:00+00:00",
+      "result": {
+        "media_id": "17979582930177566",
+        "permalink": "https://www.instagram.com/reel/DgIIRtgsHRC/",
+        "published_at": "2026-11-24T14:06:00+0000",
+        "verified": true,
+        "late_minutes": 95
+      }
     },
     {
       "id": "heat-press--linkedin--20261124-1530",
