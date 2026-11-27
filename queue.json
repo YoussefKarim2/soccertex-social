@@ -1081,9 +1081,10 @@
       "video": "video/gsm--business.mp4",
       "pillar": "2 Kit School",
       "cover": "video/gsm--business.cover.jpg",
-      "status": "queued",
+      "status": "missed",
       "veto_until": "2026-11-25T11:30:00+00:00",
-      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy."
+      "note": "Publishes to the SoccerTex Company Page once LI_ORGANIZATION_ID is set, and to the signed-in member's profile until then. The Page route needs Community Management API Development tier — a 1–4 week review, gated on a confirmed account email, a LinkedIn Page, a business email and a published privacy policy.",
+      "missed_reason": "LinkedIn was not connected when this was due."
     },
     {
       "id": "factory-questions--instagram--20261126-1230",
@@ -1168,8 +1169,15 @@
       "video": "video/shrinkage--social.mp4",
       "pillar": "2 Kit School",
       "cover": "video/shrinkage--social.cover.jpg",
-      "status": "queued",
-      "veto_until": "2026-11-26T12:30:00+00:00"
+      "status": "published",
+      "veto_until": "2026-11-26T12:30:00+00:00",
+      "result": {
+        "media_id": "18027856694924498",
+        "permalink": "https://www.instagram.com/reel/DgPunRIzWBB/",
+        "published_at": "2026-11-27T12:55:40+0000",
+        "verified": true,
+        "late_minutes": 25
+      }
     },
     {
       "id": "goalkeeper--linkedin--20261127-1530",
